@@ -1047,7 +1047,7 @@ contract HCCBODPool is Ownable {
         UserInfo storage user = userInfo[_user];
         uint256 accHCCPerShare = pool.accHCCPerShare;
         if (user.amount > 0) {
-                uint256 poolReward = HCC.balanceOf(HCCStakeReawardPool);
+                uint256 poolReward = HCC.balanceOf(address(this));
                 accHCCPerShare = accHCCPerShare.add(poolReward.mul(1e12).div(pool.totalAmount));
                 return user.amount.mul(accHCCPerShare).div(1e12).sub(user.rewardDebt);
         }
