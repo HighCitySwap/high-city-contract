@@ -1072,7 +1072,7 @@ contract HCCBODPool is Ownable {
         PoolInfo storage pool = _poolInfo;
         UserInfo storage user = userInfo[msg.sender];
         updatePool();
-        require(user.unLockTime > block.timestamp, "HCCBODReawardPool: user has locked");
+        require(block.timestamp > user.unLockTime, "HCCBODReawardPool: user has locked");
         uint256 pendingAmount;
         if (user.amount > 0) {
             pendingAmount = user.amount.mul(pool.accHCCPerShare).div(1e12).sub(user.rewardDebt);
@@ -1087,7 +1087,7 @@ contract HCCBODPool is Ownable {
         PoolInfo storage pool = _poolInfo;
         UserInfo storage user = userInfo[msg.sender];
         updatePool();
-        require(user.unLockTime > block.timestamp, "HCCBODReawardPool: user has locked");
+        require(block.timestamp > user.unLockTime, "HCCBODReawardPool: user has locked");
         uint256 pendingAmount = user.amount.mul(pool.accHCCPerShare).div(1e12).sub(user.rewardDebt);
         if (pendingAmount > 0) {
             safeHCCTransfer(msg.sender, pendingAmount);
