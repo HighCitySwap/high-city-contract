@@ -1025,7 +1025,7 @@ contract HCCStakePool is Ownable {
         if (pool.totalAmount == 0) {
             return;
         }
-        uint256 poolReward = HCC.balanceOf(HCCStakeReawardPool);
+        uint256 poolReward = HCC.balanceOf(address(this));
         if (poolReward <= 0) {
             return;
         }
