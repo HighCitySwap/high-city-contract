@@ -1062,7 +1062,7 @@ contract HCCBODPool is Ownable {
         updatePool();
         SafeERC20.safeTransferFrom(HCC, msg.sender, address(this), _amount);
         //Set NewFightPoint
-        user.amount = _amount;
+        user.amount = user.amount.add(_amount);
         user.unLockTime = block.timestamp + lockTime;
         pool.totalAmount = pool.totalAmount.add(_amount);
         user.rewardDebt = user.amount.mul(pool.accHCCPerShare).div(1e12);

@@ -1055,12 +1055,11 @@ contract HCCStakePool is Ownable {
         if (user.amount > 0) {
             uint256 pendingAmount = user.amount.mul(pool.accHCCPerShare).div(1e12).sub(user.rewardDebt);
             if (pendingAmount > 0) {
-                safeHCCTransfer(_user, pendingAmount);
+                safeHCCTransfer(msg.sender, pendingAmount);
             }
         }
         SafeERC20.safeTransferFrom(HCC, msg.sender, address(this), _amount);
-        //Set NewFightPoint
-        user.amount = _amount;
+        user.amount = user.amount.add(_amount);
         pool.totalAmount = pool.totalAmount.add(_amount);
         user.rewardDebt = user.amount.mul(pool.accHCCPerShare).div(1e12);
         emit Deposit(msg.sender, _amount);
