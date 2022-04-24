@@ -1034,6 +1034,9 @@ contract HCCToken is ERC20, Ownable {
     function addNotFeeList(address addr) public onlyOwner{
         _noFeeMap[addr] = true;
     }
+    function delNotFeeList(address addr) public onlyOwner{
+        _noFeeMap[addr] = false;
+    }
     function getUserNeedFee(address addr) public view returns(bool){
         return !_noFeeMap[addr];
     }
