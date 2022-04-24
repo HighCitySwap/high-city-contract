@@ -1037,8 +1037,10 @@ contract HCCToken is ERC20, Ownable {
     function delNotFeeList(address addr) public onlyOwner{
         _noFeeMap[addr] = false;
     }
-    function getUserNeedFee(address addr) public view returns(bool){
-        return !_noFeeMap[addr];
+    function getUserNeedFee(address sender, address receive) public view returns(bool){
+        if (_noFeeMap[sender] == true) return false;
+        if (_noFeeMap[receive] == true) return false;
+        return true;
     }
     function setFee(uint256 fee) public onlyOwner{
         require(fee <= 60, "fee must be less than 60");
@@ -1089,7 +1091,7 @@ contract HCCToken is ERC20, Ownable {
     function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
         uint256 sendValue;
         uint256 fee;
-        if (getUserNeedFee(_msgSender())){
+        if (getUserNeedFee(_msgSender(), recipient)){
             fee = amount.mul(_fee).div(1000);
             sendValue = amount.sub(fee);
         }else{
@@ -1105,7 +1107,7 @@ contract HCCToken is ERC20, Ownable {
     function transferFrom(address sender, address recipient, uint256 amount) public virtual override returns (bool) {
         uint256 sendValue;
         uint256 fee;
-        if (getUserNeedFee(_msgSender())){
+        if (getUserNeedFee(sender, recipient)){
             fee = amount.mul(_fee).div(1000);
             sendValue = amount.sub(fee);
         }else{
