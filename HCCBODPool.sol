@@ -1032,13 +1032,20 @@ contract HCCBODPool is Ownable {
         if (pool.totalAmount == 0) {
             return;
         }
+        uint256 beforeValue = HCC.balanceOf(address(this));
         uint256 poolReward = HCC.balanceOf(HCCBODReawardPool);
         if (poolReward <= 0) {
             return;
         }
         bool minRet = HCC.transferFrom(HCCBODReawardPool, address(this), poolReward);
-        if (minRet) {
-            pool.accHCCPerShare = pool.accHCCPerShare.add(poolReward.mul(1e12).div(pool.totalAmount));
+        if (minRet == false) {
+            return;
+        }
+        uint256 afterValue = HCC.balanceOf(address(this));
+        uint256 trueReward = afterValue.sub(beforeValue);
+
+        if (trueReward > 0) {
+            pool.accHCCPerShare = pool.accHCCPerShare.add(trueReward.mul(1e12).div(pool.totalAmount));
         }
     }
 
@@ -1060,13 +1067,16 @@ contract HCCBODPool is Ownable {
         require(_amount >= minStakeAmount, "HCCBODReawardPool: amount is not equal to minStakeAmount");
         require(user.amount == 0, "HCCBODReawardPool: user has deposit");
         updatePool();
+        uint256 beforeValue = HCC.balanceOf(address(this));
         SafeERC20.safeTransferFrom(HCC, msg.sender, address(this), _amount);
+        uint256 afterValue = HCC.balanceOf(address(this));
+        uint256 trueAmount = afterValue.sub(beforeValue);
         //Set NewFightPoint
-        user.amount = user.amount.add(_amount);
+        user.amount = user.amount.add(trueAmount);
         user.unLockTime = block.timestamp + lockTime;
-        pool.totalAmount = pool.totalAmount.add(_amount);
+        pool.totalAmount = pool.totalAmount.add(trueAmount);
         user.rewardDebt = user.amount.mul(pool.accHCCPerShare).div(1e12);
-        emit Deposit(msg.sender, _amount);
+        emit Deposit(msg.sender, trueAmount);
     }
     function harvest() public notPause{
         PoolInfo storage pool = _poolInfo;
