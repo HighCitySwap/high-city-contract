@@ -245,7 +245,7 @@ library Address {
 
         uint256 size;
         // solhint-disable-next-line no-inline-assembly
-        assembly { size := extcodesize(account) }
+        assembly {size := extcodesize(account)}
         return size > 0;
     }
 
@@ -269,7 +269,7 @@ library Address {
         require(address(this).balance >= amount, "Address: insufficient balance");
 
         // solhint-disable-next-line avoid-low-level-calls, avoid-call-value
-        (bool success, ) = recipient.call{ value: amount }("");
+        (bool success,) = recipient.call{value : amount}("");
         require(success, "Address: unable to send value, recipient may have reverted");
     }
 
@@ -292,7 +292,7 @@ library Address {
      * _Available since v3.1._
      */
     function functionCall(address target, bytes memory data) internal returns (bytes memory) {
-      return functionCall(target, data, "Address: low-level call failed");
+        return functionCall(target, data, "Address: low-level call failed");
     }
 
     /**
@@ -331,7 +331,7 @@ library Address {
         require(isContract(target), "Address: call to non-contract");
 
         // solhint-disable-next-line avoid-low-level-calls
-        (bool success, bytes memory returndata) = target.call{ value: value }(data);
+        (bool success, bytes memory returndata) = target.call{value : value}(data);
         return _verifyCallResult(success, returndata, errorMessage);
     }
 
@@ -383,7 +383,7 @@ library Address {
         return _verifyCallResult(success, returndata, errorMessage);
     }
 
-    function _verifyCallResult(bool success, bytes memory returndata, string memory errorMessage) private pure returns(bytes memory) {
+    function _verifyCallResult(bool success, bytes memory returndata, string memory errorMessage) private pure returns (bytes memory) {
         if (success) {
             return returndata;
         } else {
@@ -424,7 +424,8 @@ abstract contract Context {
     }
 
     function _msgData() internal view virtual returns (bytes memory) {
-        this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
+        this;
+        // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
         return msg.data;
     }
 }
@@ -542,7 +543,7 @@ library EnumerableSet {
 
         // Position of the value in the `values` array, plus 1 because index 0
         // means a value is not in the set.
-        mapping (bytes32 => uint256) _indexes;
+        mapping(bytes32 => uint256) _indexes;
     }
 
     /**
@@ -573,7 +574,7 @@ library EnumerableSet {
         // We read and store the value's index to prevent multiple reads from the same storage slot
         uint256 valueIndex = set._indexes[value];
 
-        if (valueIndex != 0) { // Equivalent to contains(set, value)
+        if (valueIndex != 0) {// Equivalent to contains(set, value)
             // To delete an element from the _values array in O(1), we swap the element to delete with the last one in
             // the array, and then remove the last element (sometimes called as 'swap and pop').
             // This modifies the order of the array, as noted in {at}.
@@ -589,7 +590,8 @@ library EnumerableSet {
             // Move the last value to the index where the value to delete is
             set._values[toDeleteIndex] = lastvalue;
             // Update the index for the moved value
-            set._indexes[lastvalue] = toDeleteIndex + 1; // All indexes are 1-based
+            set._indexes[lastvalue] = toDeleteIndex + 1;
+            // All indexes are 1-based
 
             // Delete the slot where the moved value was stored
             set._values.pop();
@@ -617,8 +619,8 @@ library EnumerableSet {
         return set._values.length;
     }
 
-   /**
-    * @dev Returns the value stored at position `index` in the set. O(1).
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
     *
     * Note that there are no guarantees on the ordering of values inside the
     * array, and it may change when more values are added or removed.
@@ -672,8 +674,8 @@ library EnumerableSet {
         return _length(set._inner);
     }
 
-   /**
-    * @dev Returns the value stored at position `index` in the set. O(1).
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
     *
     * Note that there are no guarantees on the ordering of values inside the
     * array, and it may change when more values are added or removed.
@@ -726,8 +728,8 @@ library EnumerableSet {
         return _length(set._inner);
     }
 
-   /**
-    * @dev Returns the value stored at position `index` in the set. O(1).
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
     *
     * Note that there are no guarantees on the ordering of values inside the
     * array, and it may change when more values are added or removed.
@@ -781,8 +783,8 @@ library EnumerableSet {
         return _length(set._inner);
     }
 
-   /**
-    * @dev Returns the value stored at position `index` in the set. O(1).
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
     *
     * Note that there are no guarantees on the ordering of values inside the
     * array, and it may change when more values are added or removed.
@@ -937,7 +939,7 @@ library SafeERC20 {
         // the target address contains contract code and also asserts for success in the low-level call.
 
         bytes memory returndata = address(tBscen).functionCall(data, "SafeERC20: low-level call failed");
-        if (returndata.length > 0) { // Return data is optional
+        if (returndata.length > 0) {// Return data is optional
             // solhint-disable-next-line max-line-length
             require(abi.decode(returndata, (bool)), "SafeERC20: ERC20 operation did not succeed");
         }
@@ -1006,11 +1008,12 @@ contract HCCStakePool is Ownable {
         _;
     }
 
-    function setHCCStakeReawardPool(address _HCCStakeReawardPool) public onlyOwner{
+    function setHCCStakeReawardPool(address _HCCStakeReawardPool) public onlyOwner {
         HCCStakeReawardPool = _HCCStakeReawardPool;
         emit SetHCCStakeReawardPoolEvent(_HCCStakeReawardPool);
     }
-    function setMinStakeAmount(uint256 _minStakeAmount) public onlyOwner{
+
+    function setMinStakeAmount(uint256 _minStakeAmount) public onlyOwner {
         minStakeAmount = _minStakeAmount;
         emit SetMinStakeAmontEvent(_minStakeAmount);
     }
@@ -1026,11 +1029,11 @@ contract HCCStakePool is Ownable {
             return;
         }
         uint256 beforeValue = HCC.balanceOf(address(this));
-        uint256 poolReward = HCC.balanceOf(HCCBODReawardPool);
+        uint256 poolReward = HCC.balanceOf(HCCStakeReawardPool);
         if (poolReward <= 0) {
             return;
         }
-        bool minRet = HCC.transferFrom(HCCBODReawardPool, address(this), poolReward);
+        bool minRet = HCC.transferFrom(HCCStakeReawardPool, address(this), poolReward);
         if (minRet == false) {
             return;
         }
@@ -1047,14 +1050,14 @@ contract HCCStakePool is Ownable {
         UserInfo storage user = userInfo[_user];
         uint256 accHCCPerShare = pool.accHCCPerShare;
         if (user.amount > 0) {
-                uint256 poolReward = HCC.balanceOf(HCCStakeReawardPool);
-                accHCCPerShare = accHCCPerShare.add(poolReward.mul(1e12).div(pool.totalAmount));
-                return user.amount.mul(accHCCPerShare).div(1e12).sub(user.rewardDebt);
+            uint256 poolReward = HCC.balanceOf(HCCStakeReawardPool);
+            accHCCPerShare = accHCCPerShare.add(poolReward.mul(1e12).div(pool.totalAmount));
+            return user.amount.mul(accHCCPerShare).div(1e12).sub(user.rewardDebt);
         }
         return 0;
     }
 
-    function deposit(uint256 _amount) public notPause{
+    function deposit(uint256 _amount) public notPause {
         UserInfo storage user = userInfo[msg.sender];
         PoolInfo storage pool = _poolInfo;
         require(_amount >= minStakeAmount, "HCCStakeReawardPool: deposit amount must be greater than or equal to minStakeAmount");
@@ -1074,7 +1077,8 @@ contract HCCStakePool is Ownable {
         user.rewardDebt = user.amount.mul(pool.accHCCPerShare).div(1e12);
         emit Deposit(msg.sender, trueAmount);
     }
-    function harvest() public notPause{
+
+    function harvest() public notPause {
         PoolInfo storage pool = _poolInfo;
         UserInfo storage user = userInfo[msg.sender];
         updatePool();
@@ -1089,7 +1093,7 @@ contract HCCStakePool is Ownable {
         emit Harvest(msg.sender, pendingAmount);
     }
 
-    function withdrawHCC() public notPause{
+    function withdrawHCC() public notPause {
         PoolInfo storage pool = _poolInfo;
         UserInfo storage user = userInfo[msg.sender];
         updatePool();
@@ -1103,7 +1107,7 @@ contract HCCStakePool is Ownable {
         emit Withdraw(msg.sender, pendingAmount);
     }
 
-    function emergencyWithdrawHCC() public notPause{
+    function emergencyWithdrawHCC() public notPause {
         PoolInfo storage pool = _poolInfo;
         UserInfo storage user = userInfo[msg.sender];
         uint256 amount = user.amount;

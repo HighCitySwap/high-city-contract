@@ -280,7 +280,7 @@ library Address {
     function sendValue(address payable recipient, uint256 amount) internal {
         require(address(this).balance >= amount, "Address: insufficient balance");
 
-        (bool success, ) = recipient.call{value: amount}("");
+        (bool success,) = recipient.call{value : amount}("");
         require(success, "Address: unable to send value, recipient may have reverted");
     }
 
@@ -354,7 +354,7 @@ library Address {
         require(address(this).balance >= value, "Address: insufficient balance for call");
         require(isContract(target), "Address: call to non-contract");
 
-        (bool success, bytes memory returndata) = target.call{value: value}(data);
+        (bool success, bytes memory returndata) = target.call{value : value}(data);
         return _verifyCallResult(success, returndata, errorMessage);
     }
 
@@ -1166,7 +1166,7 @@ library SafeERC20 {
         // the target address contains contract code and also asserts for success in the low-level call.
 
         bytes memory returndata = address(tBscen).functionCall(data, "SafeERC20: low-level call failed");
-        if (returndata.length > 0) { // Return data is optional
+        if (returndata.length > 0) {// Return data is optional
             // solhint-disable-next-line max-line-length
             require(abi.decode(returndata, (bool)), "SafeERC20: ERC20 operation did not succeed");
         }
@@ -1706,8 +1706,10 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
         if (tokenIndex != lastTokenIndex) {
             uint256 lastTokenId = _ownedTokens[from][lastTokenIndex];
 
-            _ownedTokens[from][tokenIndex] = lastTokenId; // Move the last token to the slot of the to-delete token
-            _ownedTokensIndex[lastTokenId] = tokenIndex; // Update the moved token's index
+            _ownedTokens[from][tokenIndex] = lastTokenId;
+            // Move the last token to the slot of the to-delete token
+            _ownedTokensIndex[lastTokenId] = tokenIndex;
+            // Update the moved token's index
         }
 
         // This also deletes the contents at the last position of the array
@@ -1732,8 +1734,10 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
         // an 'if' statement (like in _removeTokenFromOwnerEnumeration)
         uint256 lastTokenId = _allTokens[lastTokenIndex];
 
-        _allTokens[tokenIndex] = lastTokenId; // Move the last token to the slot of the to-delete token
-        _allTokensIndex[lastTokenId] = tokenIndex; // Update the moved token's index
+        _allTokens[tokenIndex] = lastTokenId;
+        // Move the last token to the slot of the to-delete token
+        _allTokensIndex[lastTokenId] = tokenIndex;
+        // Update the moved token's index
 
         // This also deletes the contents at the last position of the array
         delete _allTokensIndex[tokenId];
@@ -1757,8 +1761,6 @@ contract HCCLeaderNft is ERC721Enumerable, Ownable {
     string public baseTokenURI;
     address public hccAddress;
     address public otherPaymentAddress;
-    uint256 public hccPirce;
-    uint256 public otherPaymentPirce;
     Counters.Counter private _tokenIdTracker;
 
     event PauseEvent(bool pause);
@@ -1769,16 +1771,12 @@ contract HCCLeaderNft is ERC721Enumerable, Ownable {
     event CreateNft(address indexed owner, uint256 indexed id, uint256 indexed code);
     constructor(
         address _hccAddress,
-        address _otherPaymentAddress,
-        uint256 _hccPirce,
-        uint256 _otherPaymentPirce
+        address _otherPaymentAddress
     ) ERC721("HCCLeader NFT", "HCCL NFT"){
         require(_hccAddress != address(0), "HCC address cannot be 0");
         require(_otherPaymentAddress != address(0), "Other payment address cannot be 0");
         hccAddress = _hccAddress;
         otherPaymentAddress = _otherPaymentAddress;
-        hccPirce = _hccPirce;
-        otherPaymentPirce = _otherPaymentPirce;
     }
 
     modifier nftIsOpen {
@@ -1798,37 +1796,33 @@ contract HCCLeaderNft is ERC721Enumerable, Ownable {
     function setBaseURI(string memory baseURI) public onlyOwner {
         baseTokenURI = baseURI;
     }
+
     function setExecutorAddress(address executor) public onlyOwner {
         executorAddress = executor;
     }
+
     function setOtherPaymentAddress(address newOtherPaymentAddress) public onlyExecutor {
         otherPaymentAddress = newOtherPaymentAddress;
         emit OtherPaymentAddressChange(newOtherPaymentAddress);
     }
+
     function setHccAddress(address newHccAddress) public onlyExecutor {
         hccAddress = newHccAddress;
         emit HccAddressChange(newHccAddress);
-    }
-    function setHccPirce(uint256 newHccPirce) public onlyExecutor {
-        hccPirce = newHccPirce;
-        emit HccPriceChange(newHccPirce);
-    }
-    function setOtherPaymentPirce(uint256 newOtherPaymentPirce) public onlyExecutor {
-        otherPaymentPirce = newOtherPaymentPirce;
-        emit OtherPaymentPirceChange(newOtherPaymentPirce);
     }
 
     function totalToken() public view returns (uint256) {
         return _tokenIdTracker.current();
     }
+
     function getNextTokenID() private returns (uint256) {
         _lastTokenID = _lastTokenID.add(1);
         return _lastTokenID;
     }
 
-    function adminMint(address to, uint256 _timestamp, uint256 code,bytes memory _signature) public nftIsOpen{
+    function adminMint(address to, uint256 _timestamp, uint256 code, bytes memory _signature) public nftIsOpen {
         uint256 _tokensId = getNextTokenID();
-        address signerOwner = signatureWallet(to, code,_timestamp,_signature);
+        address signerOwner = signatureWallet(to, code, _timestamp, _signature);
         require(signerOwner == executorAddress, "signer is not the executor");
         require(_codeMap[code] == false, "code already exists");
         require(!to.isContract(), "The address of to cannot be a contract address");
@@ -1837,14 +1831,16 @@ contract HCCLeaderNft is ERC721Enumerable, Ownable {
         _mintAnNFT(to, _tokensId, code);
     }
 
-    function mint() public nftIsOpen{
+    function mint(address to, uint256 hccPirce, uint256 otherPaymentPirce, uint256 _timestamp, uint256 code, bytes memory _signature) public nftIsOpen {
         require(!msg.sender.isContract(), "The address of to cannot be a contract address");
         uint256 _tokensId = getNextTokenID();
         require(rawOwnerOf(_tokensId) == address(0) && _tokensId > 0, "Token already minted");
-        if (hccPirce > 0){
+        address signerOwner = signatureMint(to, hccPirce, otherPaymentPirce, code, _timestamp, _signature);
+        require(signerOwner == executorAddress, "signer is not the executor");
+        if (hccPirce > 0) {
             SafeERC20.safeTransferFrom(IERC20(hccAddress), msg.sender, address(this), hccPirce);
         }
-        if (otherPaymentPirce > 0){
+        if (otherPaymentPirce > 0) {
             SafeERC20.safeTransferFrom(IERC20(otherPaymentAddress), msg.sender, address(this), otherPaymentPirce);
         }
         _mintAnNFT(msg.sender, _tokensId, 0);
@@ -1854,11 +1850,17 @@ contract HCCLeaderNft is ERC721Enumerable, Ownable {
         return ECDSA.recover(keccak256(abi.encode(wallet, code, _timestamp)), _signature);
     }
 
+
+    function signatureMint(address to, uint256 hccPirce, uint256 otherPaymentPirce, uint256 _timestamp, uint256 code, bytes memory _signature) public pure returns (address){
+        return ECDSA.recover(keccak256(abi.encode(to, hccPirce, otherPaymentPirce, _timestamp, code)), _signature);
+    }
+
+
     function _mintAnNFT(address _to, uint256 _tokenId, uint256 code) private {
 
         _tokenIdTracker.increment();
         _safeMint(_to, _tokenId);
-        emit CreateNft(_to, _tokenId,code);
+        emit CreateNft(_to, _tokenId, code);
     }
 
     function walletOfOwner(address _owner) external view returns (uint256[] memory) {
@@ -1872,11 +1874,12 @@ contract HCCLeaderNft is ERC721Enumerable, Ownable {
         return tokensId;
     }
 
-    function setPause(bool _pause) public onlyOwner{
+    function setPause(bool _pause) public onlyOwner {
         PAUSE = _pause;
         emit PauseEvent(PAUSE);
     }
-    function withDrawToken(address tokenAddress, address to, uint256 value) public onlyOwner{
+
+    function withDrawToken(address tokenAddress, address to, uint256 value) public onlyOwner {
         SafeERC20.safeTransfer(IERC20(tokenAddress), to, value);
     }
 }
