@@ -17,7 +17,8 @@ abstract contract Context {
     }
 
     function _msgData() internal view virtual returns (bytes memory) {
-        this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
+        this;
+        // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
         return msg.data;
     }
 }
@@ -350,9 +351,9 @@ pragma solidity >=0.6.0 <0.8.0;
 contract ERC20 is Context, IERC20 {
     using SafeMath for uint256;
 
-    mapping (address => uint256) private _balances;
+    mapping(address => uint256) private _balances;
 
-    mapping (address => mapping (address => uint256)) private _allowances;
+    mapping(address => mapping(address => uint256)) private _allowances;
 
     uint256 private _totalSupply;
 
@@ -619,7 +620,7 @@ contract ERC20 is Context, IERC20 {
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
-    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual { }
+    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual {}
 }
 
 
@@ -735,7 +736,7 @@ library EnumerableSet {
 
         // Position of the value in the `values` array, plus 1 because index 0
         // means a value is not in the set.
-        mapping (bytes32 => uint256) _indexes;
+        mapping(bytes32 => uint256) _indexes;
     }
 
     /**
@@ -766,7 +767,7 @@ library EnumerableSet {
         // We read and store the value's index to prevent multiple reads from the same storage slot
         uint256 valueIndex = set._indexes[value];
 
-        if (valueIndex != 0) { // Equivalent to contains(set, value)
+        if (valueIndex != 0) {// Equivalent to contains(set, value)
             // To delete an element from the _values array in O(1), we swap the element to delete with the last one in
             // the array, and then remove the last element (sometimes called as 'swap and pop').
             // This modifies the order of the array, as noted in {at}.
@@ -782,7 +783,8 @@ library EnumerableSet {
             // Move the last value to the index where the value to delete is
             set._values[toDeleteIndex] = lastvalue;
             // Update the index for the moved value
-            set._indexes[lastvalue] = toDeleteIndex + 1; // All indexes are 1-based
+            set._indexes[lastvalue] = toDeleteIndex + 1;
+            // All indexes are 1-based
 
             // Delete the slot where the moved value was stored
             set._values.pop();
@@ -810,8 +812,8 @@ library EnumerableSet {
         return set._values.length;
     }
 
-   /**
-    * @dev Returns the value stored at position `index` in the set. O(1).
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
     *
     * Note that there are no guarantees on the ordering of values inside the
     * array, and it may change when more values are added or removed.
@@ -865,8 +867,8 @@ library EnumerableSet {
         return _length(set._inner);
     }
 
-   /**
-    * @dev Returns the value stored at position `index` in the set. O(1).
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
     *
     * Note that there are no guarantees on the ordering of values inside the
     * array, and it may change when more values are added or removed.
@@ -919,8 +921,8 @@ library EnumerableSet {
         return _length(set._inner);
     }
 
-   /**
-    * @dev Returns the value stored at position `index` in the set. O(1).
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
     *
     * Note that there are no guarantees on the ordering of values inside the
     * array, and it may change when more values are added or removed.
@@ -974,8 +976,8 @@ library EnumerableSet {
         return _length(set._inner);
     }
 
-   /**
-    * @dev Returns the value stored at position `index` in the set. O(1).
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
     *
     * Note that there are no guarantees on the ordering of values inside the
     * array, and it may change when more values are added or removed.
@@ -991,9 +993,9 @@ library EnumerableSet {
 
 contract HCCToken is ERC20, Ownable {
     using SafeMath for uint256;
-    uint256 public constant maxSupply = 1 * 1e8 * 1e18;  
-    uint256 private constant preMineSupply = 10000 *1e18;
-    address public constant blackHole=0x0000000000000000000000000000000000000000;
+    uint256 public constant maxSupply = 1 * 1e8 * 1e18;
+    uint256 private constant preMineSupply = 10000 * 1e18;
+    address public constant blackHole = 0x0000000000000000000000000000000000000000;
     address public _teamRewardAdderss;
     address public _nftOwnerRewardPool;
     address public _BODRewardPool;
@@ -1005,12 +1007,14 @@ contract HCCToken is ERC20, Ownable {
     using EnumerableSet for EnumerableSet.AddressSet;
     EnumerableSet.AddressSet private _minters;
     mapping(address => bool) public _noFeeMap;
-    struct DividendRatio{
+
+    struct DividendRatio {
         uint256 teamRewardRatio;
         uint256 nftOwnerRewardRatio;
         uint256 BODRewardRatio;
         uint256 stakeRewardRatio;
     }
+
     event feeChange(uint256 fee, uint256 changeTime);
     event teamRewardAdderssChange(address newAddress, uint256 changeTime);
     event nftOwnerRewardPoolChange(address newAddress, uint256 changeTime);
@@ -1031,41 +1035,48 @@ contract HCCToken is ERC20, Ownable {
         _stakeRewardPool = stakeRewardPool;
         _fee = fee;
     }
-    function addNotFeeList(address addr) public onlyOwner{
+    function addNotFeeList(address addr) public onlyOwner {
         _noFeeMap[addr] = true;
     }
-    function delNotFeeList(address addr) public onlyOwner{
+
+    function delNotFeeList(address addr) public onlyOwner {
         _noFeeMap[addr] = false;
     }
-    function getUserNeedFee(address sender, address receive) public view returns(bool){
-        if (_noFeeMap[sender] == true) return false;
-        if (_noFeeMap[receive] == true) return false;
+
+    function getUserNeedFee(address addr) public view returns (bool){
+        if (_noFeeMap[addr] == true) return false;
         return true;
     }
-    function setFee(uint256 fee) public onlyOwner{
+
+    function setFee(uint256 fee) public onlyOwner {
         require(fee <= 60, "fee must be less than 60");
         _fee = fee;
-        emit feeChange(_fee, block.timestamp);        
+        emit feeChange(_fee, block.timestamp);
     }
-    function setTeamRewardAdderss(address teamRewardAdderss) public onlyOwner{
+
+    function setTeamRewardAdderss(address teamRewardAdderss) public onlyOwner {
         require(teamRewardAdderss != address(0), "BODRewardPool must be not address(0)");
         _teamRewardAdderss = teamRewardAdderss;
         emit teamRewardAdderssChange(_teamRewardAdderss, block.timestamp);
     }
-    function setNftOwnerRewardPool(address nftOwnerRewardPool) public onlyOwner{
+
+    function setNftOwnerRewardPool(address nftOwnerRewardPool) public onlyOwner {
         _nftOwnerRewardPool = nftOwnerRewardPool;
-        emit nftOwnerRewardPoolChange(_nftOwnerRewardPool, block.timestamp);        
+        emit nftOwnerRewardPoolChange(_nftOwnerRewardPool, block.timestamp);
     }
-    function setBODRewardPool(address BODRewardPool) public onlyOwner{
+
+    function setBODRewardPool(address BODRewardPool) public onlyOwner {
         require(BODRewardPool != address(0), "BODRewardPool must be not address(0)");
         _BODRewardPool = BODRewardPool;
-        emit BODRewardPoolChange(_BODRewardPool, block.timestamp);        
+        emit BODRewardPoolChange(_BODRewardPool, block.timestamp);
     }
-    function setStakeRewardPool(address stakeRewardPool) public onlyOwner{
+
+    function setStakeRewardPool(address stakeRewardPool) public onlyOwner {
         _stakeRewardPool = stakeRewardPool;
-        emit stakeRewardPoolChange(_stakeRewardPool, block.timestamp);  
+        emit stakeRewardPoolChange(_stakeRewardPool, block.timestamp);
     }
-    function setDividendRatio(uint256 teamRewardRatio, uint256 nftOwnerRewardRatio, uint256 BODRewardRatio, uint256 stakeRewardRatio) public onlyOwner{
+
+    function setDividendRatio(uint256 teamRewardRatio, uint256 nftOwnerRewardRatio, uint256 BODRewardRatio, uint256 stakeRewardRatio) public onlyOwner {
         require(teamRewardRatio + nftOwnerRewardRatio + BODRewardRatio + stakeRewardRatio == 100, "ratio must be 100");
         _dividendRatio.teamRewardRatio = teamRewardRatio;
         _dividendRatio.nftOwnerRewardRatio = nftOwnerRewardRatio;
@@ -1074,9 +1085,9 @@ contract HCCToken is ERC20, Ownable {
         emit DividendRatioChange(teamRewardRatio, nftOwnerRewardRatio, BODRewardRatio, stakeRewardRatio, block.timestamp);
     }
 
-    function operateFee(uint256 fee) internal{
+    function operateFee(uint256 fee) internal {
         _remainingRewardFee = _remainingRewardFee.add(fee);
-        if (_remainingRewardFee >= _maxRewardFee){
+        if (_remainingRewardFee >= _maxRewardFee) {
             _remainingRewardFee = _remainingRewardFee.sub(_maxRewardFee);
             uint256 teamReward = _maxRewardFee.mul(_dividendRatio.teamRewardRatio).div(100);
             uint256 nftOwnerReward = _maxRewardFee.mul(_dividendRatio.nftOwnerRewardRatio).div(100);
@@ -1088,40 +1099,42 @@ contract HCCToken is ERC20, Ownable {
             _transfer(address(this), _stakeRewardPool, stakeRewardRatio);
         }
     }
+
     function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
         uint256 sendValue;
         uint256 fee;
-        if (getUserNeedFee(_msgSender(), recipient)){
+        if (getUserNeedFee(_msgSender()) && getUserNeedFee(recipient)) {
             fee = amount.mul(_fee).div(1000);
             sendValue = amount.sub(fee);
-        }else{
+        } else {
             sendValue = amount;
         }
         _transfer(_msgSender(), recipient, sendValue);
-        if (fee > 0){
+        if (fee > 0) {
             _transfer(_msgSender(), address(this), fee);
             operateFee(fee);
         }
         return true;
     }
+
     function transferFrom(address sender, address recipient, uint256 amount) public virtual override returns (bool) {
         uint256 sendValue;
         uint256 fee;
-        if (getUserNeedFee(sender, recipient)){
+        if (getUserNeedFee(sender) && getUserNeedFee(recipient)) {
             fee = amount.mul(_fee).div(1000);
             sendValue = amount.sub(fee);
-        }else{
+        } else {
             sendValue = amount;
         }
         _transfer(sender, recipient, amount);
         _approve(sender, _msgSender(), allowance(sender, _msgSender()).sub(amount, "ERC20: transfer amount exceeds allowance"));
-        if (fee > 0){
+        if (fee > 0) {
             _transfer(sender, address(this), fee);
             operateFee(fee);
         }
         return true;
     }
-    
+
     // mint with max supply
     function mint(address _to, uint256 _amount) public onlyMinter returns (bool) {
         if (_amount.add(totalSupply()) > maxSupply) {
