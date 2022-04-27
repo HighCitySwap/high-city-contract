@@ -1088,11 +1088,11 @@ contract HCCToken is ERC20, Ownable {
     function operateFee(uint256 fee) internal {
         _remainingRewardFee = _remainingRewardFee.add(fee);
         if (_remainingRewardFee >= _maxRewardFee) {
-            _remainingRewardFee = 0;
-            uint256 teamReward = _remainingRewardFee.mul(_dividendRatio.teamRewardRatio).div(100);
-            uint256 nftOwnerReward = _remainingRewardFee.mul(_dividendRatio.nftOwnerRewardRatio).div(100);
-            uint256 BODReward = _remainingRewardFee.mul(_dividendRatio.BODRewardRatio).div(100);
-            uint256 stakeRewardRatio = _remainingRewardFee.mul(_dividendRatio.stakeRewardRatio).div(100);
+            _remainingRewardFee = _remainingRewardFee.sub(_maxRewardFee);
+            uint256 teamReward = _maxRewardFee.mul(_dividendRatio.teamRewardRatio).div(100);
+            uint256 nftOwnerReward = _maxRewardFee.mul(_dividendRatio.nftOwnerRewardRatio).div(100);
+            uint256 BODReward = _maxRewardFee.mul(_dividendRatio.BODRewardRatio).div(100);
+            uint256 stakeRewardRatio = _maxRewardFee.mul(_dividendRatio.stakeRewardRatio).div(100);
             _transfer(address(this), _teamRewardAdderss, teamReward);
             _transfer(address(this), _nftOwnerRewardPool, nftOwnerReward);
             _transfer(address(this), _BODRewardPool, BODReward);
