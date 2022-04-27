@@ -18,11 +18,11 @@ library SafeMath {
      * _Available since v3.4._
      */
     function tryAdd(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-    unchecked {
-        uint256 c = a + b;
-        if (c < a) return (false, 0);
-        return (true, c);
-    }
+        unchecked {
+            uint256 c = a + b;
+            if (c < a) return (false, 0);
+            return (true, c);
+        }
     }
 
     /**
@@ -31,10 +31,10 @@ library SafeMath {
      * _Available since v3.4._
      */
     function trySub(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-    unchecked {
-        if (b > a) return (false, 0);
-        return (true, a - b);
-    }
+        unchecked {
+            if (b > a) return (false, 0);
+            return (true, a - b);
+        }
     }
 
     /**
@@ -43,15 +43,15 @@ library SafeMath {
      * _Available since v3.4._
      */
     function tryMul(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-    unchecked {
-        // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
-        // benefit is lost if 'b' is also tested.
-        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
-        if (a == 0) return (true, 0);
-        uint256 c = a * b;
-        if (c / a != b) return (false, 0);
-        return (true, c);
-    }
+        unchecked {
+            // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
+            // benefit is lost if 'b' is also tested.
+            // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
+            if (a == 0) return (true, 0);
+            uint256 c = a * b;
+            if (c / a != b) return (false, 0);
+            return (true, c);
+        }
     }
 
     /**
@@ -60,10 +60,10 @@ library SafeMath {
      * _Available since v3.4._
      */
     function tryDiv(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-    unchecked {
-        if (b == 0) return (false, 0);
-        return (true, a / b);
-    }
+        unchecked {
+            if (b == 0) return (false, 0);
+            return (true, a / b);
+        }
     }
 
     /**
@@ -72,10 +72,10 @@ library SafeMath {
      * _Available since v3.4._
      */
     function tryMod(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-    unchecked {
-        if (b == 0) return (false, 0);
-        return (true, a % b);
-    }
+        unchecked {
+            if (b == 0) return (false, 0);
+            return (true, a % b);
+        }
     }
 
     /**
@@ -168,10 +168,10 @@ library SafeMath {
         uint256 b,
         string memory errorMessage
     ) internal pure returns (uint256) {
-    unchecked {
-        require(b <= a, errorMessage);
-        return a - b;
-    }
+        unchecked {
+            require(b <= a, errorMessage);
+            return a - b;
+        }
     }
 
     /**
@@ -191,10 +191,10 @@ library SafeMath {
         uint256 b,
         string memory errorMessage
     ) internal pure returns (uint256) {
-    unchecked {
-        require(b > 0, errorMessage);
-        return a / b;
-    }
+        unchecked {
+            require(b > 0, errorMessage);
+            return a / b;
+        }
     }
 
     /**
@@ -217,10 +217,10 @@ library SafeMath {
         uint256 b,
         string memory errorMessage
     ) internal pure returns (uint256) {
-    unchecked {
-        require(b > 0, errorMessage);
-        return a % b;
-    }
+        unchecked {
+            require(b > 0, errorMessage);
+            return a % b;
+        }
     }
 }
 
@@ -280,7 +280,7 @@ library Address {
     function sendValue(address payable recipient, uint256 amount) internal {
         require(address(this).balance >= amount, "Address: insufficient balance");
 
-        (bool success,) = recipient.call{value : amount}("");
+        (bool success, ) = recipient.call{value: amount}("");
         require(success, "Address: unable to send value, recipient may have reverted");
     }
 
@@ -354,7 +354,7 @@ library Address {
         require(address(this).balance >= value, "Address: insufficient balance for call");
         require(isContract(target), "Address: call to non-contract");
 
-        (bool success, bytes memory returndata) = target.call{value : value}(data);
+        (bool success, bytes memory returndata) = target.call{value: value}(data);
         return _verifyCallResult(success, returndata, errorMessage);
     }
 
@@ -794,17 +794,17 @@ library Counters {
     }
 
     function increment(Counter storage counter) internal {
-    unchecked {
-        counter._value += 1;
-    }
+        unchecked {
+            counter._value += 1;
+        }
     }
 
     function decrement(Counter storage counter) internal {
         uint256 value = counter._value;
         require(value > 0, "Counter: decrement overflow");
-    unchecked {
-        counter._value = value - 1;
-    }
+        unchecked {
+            counter._value = value - 1;
+        }
     }
 
     function reset(Counter storage counter) internal {
@@ -1166,7 +1166,7 @@ library SafeERC20 {
         // the target address contains contract code and also asserts for success in the low-level call.
 
         bytes memory returndata = address(tBscen).functionCall(data, "SafeERC20: low-level call failed");
-        if (returndata.length > 0) {// Return data is optional
+        if (returndata.length > 0) { // Return data is optional
             // solhint-disable-next-line max-line-length
             require(abi.decode(returndata, (bool)), "SafeERC20: ERC20 operation did not succeed");
         }
@@ -1706,10 +1706,8 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
         if (tokenIndex != lastTokenIndex) {
             uint256 lastTokenId = _ownedTokens[from][lastTokenIndex];
 
-            _ownedTokens[from][tokenIndex] = lastTokenId;
-            // Move the last token to the slot of the to-delete token
-            _ownedTokensIndex[lastTokenId] = tokenIndex;
-            // Update the moved token's index
+            _ownedTokens[from][tokenIndex] = lastTokenId; // Move the last token to the slot of the to-delete token
+            _ownedTokensIndex[lastTokenId] = tokenIndex; // Update the moved token's index
         }
 
         // This also deletes the contents at the last position of the array
@@ -1734,10 +1732,8 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
         // an 'if' statement (like in _removeTokenFromOwnerEnumeration)
         uint256 lastTokenId = _allTokens[lastTokenIndex];
 
-        _allTokens[tokenIndex] = lastTokenId;
-        // Move the last token to the slot of the to-delete token
-        _allTokensIndex[lastTokenId] = tokenIndex;
-        // Update the moved token's index
+        _allTokens[tokenIndex] = lastTokenId; // Move the last token to the slot of the to-delete token
+        _allTokensIndex[lastTokenId] = tokenIndex; // Update the moved token's index
 
         // This also deletes the contents at the last position of the array
         delete _allTokensIndex[tokenId];
@@ -1796,61 +1792,57 @@ contract HCCLeaderNft is ERC721Enumerable, Ownable {
     function setBaseURI(string memory baseURI) public onlyOwner {
         baseTokenURI = baseURI;
     }
-
     function setExecutorAddress(address executor) public onlyOwner {
         executorAddress = executor;
     }
-
     function setOtherPaymentAddress(address newOtherPaymentAddress) public onlyExecutor {
         otherPaymentAddress = newOtherPaymentAddress;
         emit OtherPaymentAddressChange(newOtherPaymentAddress);
     }
-
     function setHccAddress(address newHccAddress) public onlyExecutor {
         hccAddress = newHccAddress;
         emit HccAddressChange(newHccAddress);
     }
-
     function totalToken() public view returns (uint256) {
         return _tokenIdTracker.current();
     }
-
     function getNextTokenID() private returns (uint256) {
         _lastTokenID = _lastTokenID.add(1);
         return _lastTokenID;
     }
 
-    function adminMint(address to, uint256 _timestamp, uint256 code, bytes memory _signature) public nftIsOpen {
+    function adminMint(address to, uint256 _timestamp, uint256 code,bytes memory _signature) public nftIsOpen{
         uint256 _tokensId = getNextTokenID();
         address signerOwner = signatureWallet(to, code, _timestamp, _signature);
         require(signerOwner == executorAddress, "signer is not the executor");
         require(_codeMap[code] == false, "code already exists");
         require(!to.isContract(), "The address of to cannot be a contract address");
         require(rawOwnerOf(_tokensId) == address(0) && _tokensId > 0, "Token already minted");
-        _codeMap[code] = true;
+        _codeMap[code] = true; 
         _mintAnNFT(to, _tokensId, code);
     }
 
-    function mint(address to, uint256 hccPirce, uint256 otherPaymentPirce, uint256 _timestamp, uint256 code, bytes memory _signature) public nftIsOpen {
+    function mint(address to, uint256 hccPirce, uint256 otherPaymentPirce, uint256 _timestamp, uint256 code, bytes memory _signature) public nftIsOpen{
         require(!msg.sender.isContract(), "The address of to cannot be a contract address");
+        require(to == msg.sender, "The address of to cannot be the address of the caller");
         uint256 _tokensId = getNextTokenID();
         require(rawOwnerOf(_tokensId) == address(0) && _tokensId > 0, "Token already minted");
-        address signerOwner = signatureMint(to, hccPirce, otherPaymentPirce, code, _timestamp, _signature);
+        address signerOwner = signatureMint(to, hccPirce, otherPaymentPirce,_timestamp, code,_signature);
         require(signerOwner == executorAddress, "signer is not the executor");
-        if (hccPirce > 0) {
+        if (hccPirce > 0){
             SafeERC20.safeTransferFrom(IERC20(hccAddress), msg.sender, address(this), hccPirce);
         }
-        if (otherPaymentPirce > 0) {
+        if (otherPaymentPirce > 0){
             SafeERC20.safeTransferFrom(IERC20(otherPaymentAddress), msg.sender, address(this), otherPaymentPirce);
         }
-        _mintAnNFT(msg.sender, _tokensId, 0);
+        _mintAnNFT(msg.sender, _tokensId, code);
     }
 
     function signatureWallet(address wallet, uint256 code, uint256 _timestamp, bytes memory _signature) public pure returns (address){
         return ECDSA.recover(keccak256(abi.encode(wallet, code, _timestamp)), _signature);
     }
 
-
+    
     function signatureMint(address to, uint256 hccPirce, uint256 otherPaymentPirce, uint256 _timestamp, uint256 code, bytes memory _signature) public pure returns (address){
         return ECDSA.recover(keccak256(abi.encode(to, hccPirce, otherPaymentPirce, _timestamp, code)), _signature);
     }
@@ -1874,12 +1866,11 @@ contract HCCLeaderNft is ERC721Enumerable, Ownable {
         return tokensId;
     }
 
-    function setPause(bool _pause) public onlyOwner {
+    function setPause(bool _pause) public onlyOwner{
         PAUSE = _pause;
         emit PauseEvent(PAUSE);
     }
-
-    function withDrawToken(address tokenAddress, address to, uint256 value) public onlyOwner {
+    function withDrawToken(address tokenAddress, address to, uint256 value) public onlyOwner{
         SafeERC20.safeTransfer(IERC20(tokenAddress), to, value);
     }
 }
