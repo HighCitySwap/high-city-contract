@@ -964,6 +964,7 @@ contract HCCStakePool is Ownable {
     struct PoolInfo {
         uint256 accHCCPerShare; // Accumulated HCCs per share, times 1e12.
         uint256 totalAmount;    // Total amount of current pool deposit.
+        uint256 num;
     }
 
     // The HCC TBscen!
@@ -998,7 +999,8 @@ contract HCCStakePool is Ownable {
         minStakeAmount = _minStakeAmount;
         _poolInfo = PoolInfo({
         accHCCPerShare : 0,
-        totalAmount : 0
+        totalAmount : 0,
+        num : 0
         });
 
     }
@@ -1074,6 +1076,7 @@ contract HCCStakePool is Ownable {
         uint256 trueAmount = afterValue.sub(beforeValue);
         user.amount = user.amount.add(trueAmount);
         pool.totalAmount = pool.totalAmount.add(trueAmount);
+        pool.num = pool.num.add(1);
         user.rewardDebt = user.amount.mul(pool.accHCCPerShare).div(1e12);
         emit Deposit(msg.sender, trueAmount);
     }
@@ -1103,6 +1106,7 @@ contract HCCStakePool is Ownable {
         }
         safeHCCTransfer(msg.sender, user.amount);
         user.amount = 0;
+        pool.num = pool.num.sub(1);
         user.rewardDebt = user.amount.mul(pool.accHCCPerShare).div(1e12);
         emit Withdraw(msg.sender, pendingAmount);
     }
@@ -1114,6 +1118,7 @@ contract HCCStakePool is Ownable {
         safeHCCTransfer(address(this), user.amount);
         user.amount = 0;
         user.rewardDebt = 0;
+        pool.num = pool.num.sub(1);
         pool.totalAmount = pool.totalAmount.sub(amount);
         emit EmergencyWithdraw(msg.sender, amount);
     }

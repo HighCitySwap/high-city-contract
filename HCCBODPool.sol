@@ -963,6 +963,7 @@ contract HCCBODPool is Ownable {
     struct PoolInfo {
         uint256 accHCCPerShare; // Accumulated HCCs per share, times 1e12.
         uint256 totalAmount;    // Total amount of current pool deposit.
+        uint256 num;
     }
 
     // The HCC TBscen!
@@ -999,7 +1000,8 @@ contract HCCBODPool is Ownable {
         lockTime = 60 * 60 * 24 * 30; // 30 days
         _poolInfo = PoolInfo({
         accHCCPerShare : 0,
-        totalAmount : 0
+        totalAmount : 0,
+        num : 0
         });
 
     }
@@ -1075,6 +1077,7 @@ contract HCCBODPool is Ownable {
         user.amount = user.amount.add(trueAmount);
         user.unLockTime = block.timestamp + lockTime;
         pool.totalAmount = pool.totalAmount.add(trueAmount);
+        pool.num = pool.num.add(1);
         user.rewardDebt = user.amount.mul(pool.accHCCPerShare).div(1e12);
         emit Deposit(msg.sender, trueAmount);
     }
@@ -1107,6 +1110,7 @@ contract HCCBODPool is Ownable {
         }
         user.amount = 0;
         user.rewardDebt = user.amount.mul(pool.accHCCPerShare).div(1e12);
+        pool.num = pool.num.sub(1);
         emit Withdraw(msg.sender, pendingAmount);
     }
 
@@ -1118,6 +1122,7 @@ contract HCCBODPool is Ownable {
         user.amount = 0;
         user.rewardDebt = 0;
         pool.totalAmount = pool.totalAmount.sub(amount);
+        pool.num = pool.num.sub(1);
         emit EmergencyWithdraw(msg.sender, amount);
     }
     // Safe HCC transfer function, just in case if rounding error causes pool to not have enough HCCs.
