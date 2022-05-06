@@ -1063,6 +1063,20 @@ contract HCCBODPool is Ownable {
         return 0;
     }
 
+    function _userInfo(address _user) public view returns(uint256 total,uint256 reward,uint256 lp,uint256 lockTime){
+        PoolInfo storage pool = _poolInfo;
+        UserInfo storage user = userInfo[_user];
+        uint256 pendingAmount;
+        uint256 accHCCPerShare = pool.accHCCPerShare;
+        if (user.amount > 0) {
+            uint256 poolReward = HCC.balanceOf(HCCBODReawardPool);
+            accHCCPerShare = accHCCPerShare.add(poolReward.mul(1e12).div(pool.totalAmount));
+            pendingAmount =  user.amount.mul(accHCCPerShare).div(1e12).sub(user.rewardDebt);
+            return (user.amount,pendingAmount,accHCCPerShare,user.unLockTime);
+        }
+        return (0,0,0,0);
+    }
+
     function deposit(uint256 _amount) public notPause{
         UserInfo storage user = userInfo[msg.sender];
         PoolInfo storage pool = _poolInfo;
