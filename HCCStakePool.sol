@@ -958,13 +958,16 @@ contract HCCStakePool is Ownable {
     struct UserInfo {
         uint256 amount;     // How many LP tBscens the user has provided.
         uint256 rewardDebt; // Reward debt.
+        uint256 receiveReward; // reward received
     }
 
     // Info of each pool.
     struct PoolInfo {
         uint256 accHCCPerShare; // Accumulated HCCs per share, times 1e12.
         uint256 totalAmount;    // Total amount of current pool deposit.
-        uint256 num;
+        uint256 totalReward;    // reward received of pool.
+        uint256 curAmount; // current amount of pool deposit
+        uint256 holderNum; // current holder number of pool deposit
     }
 
     // The HCC TBscen!
@@ -1000,7 +1003,9 @@ contract HCCStakePool is Ownable {
         _poolInfo = PoolInfo({
         accHCCPerShare : 0,
         totalAmount : 0,
-        num : 0
+        totalReward : 0,
+        curAmount : 0,
+        holderNum : 0
         });
 
     }
@@ -1044,6 +1049,7 @@ contract HCCStakePool is Ownable {
 
         if (trueReward > 0) {
             pool.accHCCPerShare = pool.accHCCPerShare.add(trueReward.mul(1e12).div(pool.totalAmount));
+            pool.totalReward = pool.totalReward.add(trueReward);
         }
     }
 
@@ -1057,20 +1063,6 @@ contract HCCStakePool is Ownable {
             return user.amount.mul(accHCCPerShare).div(1e12).sub(user.rewardDebt);
         }
         return 0;
-    }
-
-    function _userInfo(address _user) public view returns(uint256 total,uint256 reward,uint256 lp){
-        PoolInfo storage pool = _poolInfo;
-        UserInfo storage user = userInfo[_user];
-        uint256 pendingAmount;
-        uint256 accHCCPerShare = pool.accHCCPerShare;
-        if (user.amount > 0) {
-            uint256 poolReward = HCC.balanceOf(HCCStakeReawardPool);
-            accHCCPerShare = accHCCPerShare.add(poolReward.mul(1e12).div(pool.totalAmount));
-            pendingAmount =  user.amount.mul(accHCCPerShare).div(1e12).sub(user.rewardDebt);
-            return (user.amount,pendingAmount,accHCCPerShare);
-        }
-        return (0,0,0);
     }
 
     function deposit(uint256 _amount) public notPause {
@@ -1090,7 +1082,8 @@ contract HCCStakePool is Ownable {
         uint256 trueAmount = afterValue.sub(beforeValue);
         user.amount = user.amount.add(trueAmount);
         pool.totalAmount = pool.totalAmount.add(trueAmount);
-        pool.num = pool.num.add(1);
+        pool.curAmount = pool.curAmount.add(_amount);
+        pool.holderNum = pool.holderNum.add(1);
         user.rewardDebt = user.amount.mul(pool.accHCCPerShare).div(1e12);
         emit Deposit(msg.sender, trueAmount);
     }
@@ -1104,6 +1097,7 @@ contract HCCStakePool is Ownable {
             pendingAmount = user.amount.mul(pool.accHCCPerShare).div(1e12).sub(user.rewardDebt);
             if (pendingAmount > 0) {
                 safeHCCTransfer(msg.sender, pendingAmount);
+                user.receiveReward = user.receiveReward.add(pendingAmount);
             }
         }
         user.rewardDebt = user.amount.mul(pool.accHCCPerShare).div(1e12);
@@ -1117,10 +1111,13 @@ contract HCCStakePool is Ownable {
         uint256 pendingAmount = user.amount.mul(pool.accHCCPerShare).div(1e12).sub(user.rewardDebt);
         if (pendingAmount > 0) {
             safeHCCTransfer(msg.sender, pendingAmount);
+            user.receiveReward = user.receiveReward.add(pendingAmount);
         }
-        safeHCCTransfer(msg.sender, user.amount);
+        uint256 amount = user.amount;
+        safeHCCTransfer(msg.sender, amount);
         user.amount = 0;
-        pool.num = pool.num.sub(1);
+        pool.holderNum = pool.holderNum.sub(1);
+        pool.curAmount = pool.curAmount.sub(amount);
         user.rewardDebt = user.amount.mul(pool.accHCCPerShare).div(1e12);
         emit Withdraw(msg.sender, pendingAmount);
     }
@@ -1129,10 +1126,11 @@ contract HCCStakePool is Ownable {
         PoolInfo storage pool = _poolInfo;
         UserInfo storage user = userInfo[msg.sender];
         uint256 amount = user.amount;
-        safeHCCTransfer(address(this), user.amount);
+        safeHCCTransfer(msg.sender, user.amount);
         user.amount = 0;
         user.rewardDebt = 0;
-        pool.num = pool.num.sub(1);
+        pool.holderNum = pool.holderNum.sub(1);
+        pool.curAmount = pool.curAmount.sub(amount);
         pool.totalAmount = pool.totalAmount.sub(amount);
         emit EmergencyWithdraw(msg.sender, amount);
     }
