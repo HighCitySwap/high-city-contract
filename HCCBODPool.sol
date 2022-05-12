@@ -1115,9 +1115,7 @@ contract HCCBODPool is Ownable {
             user.receiveReward = user.receiveReward.add(pendingAmount);
         }
         uint256 amount = user.amount;
-        if (user.unLockTime > block.timestamp){
-            safeHCCTransfer(msg.sender, amount);
-        }
+        safeHCCTransfer(msg.sender, amount);
         user.amount = 0;
         pool.holderNum = pool.holderNum.sub(1);
         pool.curAmount = pool.curAmount.sub(amount);
