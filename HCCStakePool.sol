@@ -983,6 +983,8 @@ contract HCCStakePool is Ownable {
     // Control mining
     bool public paused = false;
 
+    address public _projectAddress; //project address
+
 
     event Deposit(address indexed user, uint256 value);
     event Withdraw(address indexed user, uint256 amount);
@@ -990,15 +992,18 @@ contract HCCStakePool is Ownable {
     event SetHCCStakeReawardPoolEvent(address newHCCStakeReawardPool);
     event SetMinStakeAmontEvent(uint256 newMinStakeAmount);
     event SetLockTimeEvent(uint256 newLockTime);
+    event SetProjectAddress(address projectAddress);
     event EmergencyWithdraw(address indexed user, uint256 amount);
 
     constructor(
         IERC20 _HCC,
         address _HCCStakeReawardPool,
+        address projectAddress,
         uint256 _minStakeAmount
     ) {
         HCC = _HCC;
         HCCStakeReawardPool = _HCCStakeReawardPool;
+        _projectAddress = projectAddress;
         minStakeAmount = _minStakeAmount;
         _poolInfo = PoolInfo({
         accHCCPerShare : 0,
@@ -1023,6 +1028,12 @@ contract HCCStakePool is Ownable {
     function setMinStakeAmount(uint256 _minStakeAmount) public onlyOwner {
         minStakeAmount = _minStakeAmount;
         emit SetMinStakeAmontEvent(_minStakeAmount);
+    }
+
+
+    function setProjectAddress(address projectAddress) public onlyOwner {
+        _projectAddress = projectAddress;
+        emit SetProjectAddress(projectAddress);
     }
 
     function setPause() public onlyOwner {
@@ -1126,7 +1137,12 @@ contract HCCStakePool is Ownable {
         PoolInfo storage pool = _poolInfo;
         UserInfo storage user = userInfo[msg.sender];
         uint256 amount = user.amount;
-        safeHCCTransfer(msg.sender, user.amount);
+        updatePool();
+        uint256 pendingAmount = amount.mul(pool.accHCCPerShare).div(1e12).sub(user.rewardDebt);
+        if (pendingAmount > 0) {
+            safeHCCTransfer(_projectAddress, pendingAmount);
+        }
+        safeHCCTransfer(msg.sender, amount);
         user.amount = 0;
         user.rewardDebt = 0;
         pool.holderNum = pool.holderNum.sub(1);

@@ -982,6 +982,7 @@ contract HCCBODPool is Ownable {
     mapping(address => UserInfo) public userInfo;
     // Control mining
     bool public paused = false;
+    address public _projectAddress; //project address
 
 
     event Deposit(address indexed user, uint256 value);
@@ -990,15 +991,18 @@ contract HCCBODPool is Ownable {
     event SetHCCBODReawardPoolEvent(address newHCCBODReawardPool);
     event SetMinStakeAmontEvent(uint256 newMinStakeAmount);
     event SetLockTimeEvent(uint256 newLockTime);
+    event SetProjectAddress(address projectAddress);
     event EmergencyWithdraw(address indexed user, uint256 amount);
 
     constructor(
         IERC20 _HCC,
         address _HCCBODReawardPool,
+        address projectAddress,
         uint256 _minStakeAmount
     ) {
         HCC = _HCC;
         HCCBODReawardPool = _HCCBODReawardPool;
+        _projectAddress = projectAddress;
         minStakeAmount = _minStakeAmount;
         lockTime = 60 * 60 * 24 * 30; // 30 days
         _poolInfo = PoolInfo({
@@ -1027,6 +1031,10 @@ contract HCCBODPool is Ownable {
     function setLockTime(uint256 _lockTime) public onlyOwner{
         lockTime = _lockTime;
         emit SetLockTimeEvent(_lockTime);
+    }
+    function setProjectAddress(address projectAddress) public onlyOwner {
+        _projectAddress = projectAddress;
+        emit SetProjectAddress(projectAddress);
     }
 
     function setPause() public onlyOwner {
@@ -1126,8 +1134,14 @@ contract HCCBODPool is Ownable {
     function emergencyWithdrawHCC() public notPause{
         PoolInfo storage pool = _poolInfo;
         UserInfo storage user = userInfo[msg.sender];
+        updatePool();
+        uint256 pendingAmount = user.amount.mul(pool.accHCCPerShare).div(1e12).sub(user.rewardDebt);
+        if (pendingAmount > 0) {
+            safeHCCTransfer(msg.sender, pendingAmount);
+            user.receiveReward = user.receiveReward.add(pendingAmount);
+        }
         uint256 amount = user.amount;
-        safeHCCTransfer(msg.sender, user.amount);
+        safeHCCTransfer(msg.sender, amount);
         user.amount = 0;
         user.rewardDebt = 0;
         pool.holderNum = pool.holderNum.sub(1);
