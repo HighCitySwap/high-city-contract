@@ -965,6 +965,9 @@ contract HCCPurchase is Ownable {
 
     bool private paused = false;
 
+    event AddRound(uint256 round, uint256 total, address token, uint256 price, uint256 beginTime, uint256 endTime);
+    event SetRound(uint256 round, uint256 total, address token, uint256 price, uint256 beginTime, uint256 endTime);
+
     constructor(
         IERC20 _HCC
     ) {
@@ -1012,6 +1015,8 @@ contract HCCPurchase is Ownable {
         require(total == 0, "addRound: Total cannot be zero");
         require(price == 0, "addRound: Price cannot be zero");
         require(token != address(0), "addRound: Token is the zero address");
+        require(beginTime < block.timestamp, "addRound: round begin time can not before current time.");
+        require(endTime < block.timestamp, "addRound: round end time can not before current time.");
 
         PurchaseInfo storage info = purchaseInfo[round];
         require(info.total != 0, "addRound: round has exist.");
@@ -1021,22 +1026,26 @@ contract HCCPurchase is Ownable {
         info.price = price;
         info.beginTime = beginTime;
         info.endTime = endTime;
+        emit AddRound(round, total, token, price, beginTime, endTime);
     }
 
     function setRound(uint256 round, uint256 total, address token, uint256 price, uint256 beginTime, uint256 endTime) public onlyOwner {
         require(total == 0, "setRound: Total cannot be zero");
         require(price == 0, "setRound: Price cannot be zero");
         require(token != address(0), "setRound: Token is the zero address");
-        require(beginTime > block.timestamp, "setRound: round begin time can not before current time.");
+        require(beginTime < block.timestamp, "setRound: round begin time can not before current time.");
+        require(endTime < block.timestamp, "setRound: round end time can not before current time.");
 
         PurchaseInfo storage info = purchaseInfo[round];
-        require(info.beginTime > block.timestamp, "setRound: round has begin, don't update.");
+        require(info.beginTime < block.timestamp, "setRound: round has begin, don't update.");
+        require(info.total == 0, "setRound: round don't exist.");
         info.purchasedAmount = info.purchasedAmount;
         info.total = total;
         info.token = token;
         info.price = price;
         info.beginTime = beginTime;
         info.endTime = endTime;
+        emit SetRound(round, total, token, price, beginTime, endTime);
     }
 
     function getRound(uint256 round) public view returns (uint256 total, uint256 purchasedAmount, address token, uint256 price, uint256 beginTime, uint256 endTime) {
