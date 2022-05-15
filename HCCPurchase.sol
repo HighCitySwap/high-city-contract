@@ -1044,7 +1044,7 @@ contract HCCPurchase is Ownable {
 
         PurchaseInfo storage info = purchaseInfo[round];
         require(info.beginTime == 0, "getRound: round don't exist.");
-        return (info.total,info.purchasedAmount, info.token, info.price, info.beginTime, info.endTime);
+        return (info.total, info.purchasedAmount, info.token, info.price, info.beginTime, info.endTime);
     }
 
     // Safe HCC transfer function, just in case if rounding error causes pool to not have enough HCCs.
