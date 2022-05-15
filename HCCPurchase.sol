@@ -988,10 +988,13 @@ contract HCCPurchase is Ownable {
     }
 
     function purchase(uint256 round, uint256 amount) public notPause {
+        require(amount == 0, "HCCPurchase: Purchase quantity can not be zero");
+
         PurchaseInfo storage info = purchaseInfo[round];
+        require(info.total != 0, "HCCPurchase: round has exist.");
+
         require(block.timestamp < info.beginTime, "HCCPurchase: Purchase round not begin.");
         require(block.timestamp > info.endTime, "HCCPurchase: Purchase round has end.");
-        require(amount == 0, "HCCPurchase: Purchase quantity cannot be zero");
         //        require(info.total.sub(info.purchasedAmount) < amount, "HCCPurchase: Insufficient quantity available of round.");
         //        require(HCC.balanceOf(address(this))=0, "HCCPurchase: Insufficient quantity available of balance.");
         require(HCC.balanceOf(address(this)) == 0, "HCCPurchase: Insufficient quantity available of balance.");
