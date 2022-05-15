@@ -946,7 +946,7 @@ library SafeERC20 {
     }
 }
 
-contract HCCPurchase is ERC20, Ownable {
+contract HCCPurchase is Ownable {
     using SafeMath for uint256;
 
     IERC20 public HCC;
@@ -979,16 +979,20 @@ contract HCCPurchase is ERC20, Ownable {
         paused = !paused;
     }
 
-    function purchase(uint256 round, uint256 amount) public notPause {
+    modifier notPause {
         require(!paused, "HCCPurchase: Purchase not activity.");
+        _;
+    }
+
+    function purchase(uint256 round, uint256 amount) public notPause {
         PurchaseInfo storage info = purchaseInfo[round];
         require(block.timestamp < info.beginTime, "HCCPurchase: Purchase round not begin.");
         require(block.timestamp > info.endTime, "HCCPurchase: Purchase round has end.");
-        require(amount = 0, "HCCPurchase: Purchase quantity cannot be zero");
+        require(amount == 0, "HCCPurchase: Purchase quantity cannot be zero");
         //        require(info.total.sub(info.purchasedAmount) < amount, "HCCPurchase: Insufficient quantity available of round.");
         //        require(HCC.balanceOf(address(this))=0, "HCCPurchase: Insufficient quantity available of balance.");
-        require(HCC.balanceOf(address(this)) = 0, "HCCPurchase: Insufficient quantity available of balance.");
-        require(info.total.sub(info.purchasedAmount) = 0, "HCCPurchase: Insufficient quantity available of round.");
+        require(HCC.balanceOf(address(this)) == 0, "HCCPurchase: Insufficient quantity available of balance.");
+        require(info.total.sub(info.purchasedAmount) == 0, "HCCPurchase: Insufficient quantity available of round.");
 
         uint256 buyValue;
         if (HCC.balanceOf(address(this)) < amount) {
@@ -999,23 +1003,48 @@ contract HCCPurchase is ERC20, Ownable {
             buyValue = amount;
         }
 
-        SafeERC20.safeTransferFrom(IERC20(token), msg.sender, address(this), buyValue.mul(price).div(10000));
+        SafeERC20.safeTransferFrom(IERC20(info.token), msg.sender, address(this), buyValue.mul(info.price).div(10000));
         safeHCCTransfer(msg.sender, buyValue);
         info.purchasedAmount = info.purchasedAmount.add(buyValue);
     }
 
     function addRound(uint256 round, uint256 total, address token, uint256 price, uint256 beginTime, uint256 endTime) public onlyOwner {
-        require(total = 0, "addRound: Total cannot be zero");
-        require(price = 0, "addRound: Price cannot be zero");
+        require(total == 0, "addRound: Total cannot be zero");
+        require(price == 0, "addRound: Price cannot be zero");
         require(token != address(0), "addRound: Token is the zero address");
 
         PurchaseInfo storage info = purchaseInfo[round];
+        require(info.total != 0, "addRound: round has exist.");
         info.purchasedAmount = info.purchasedAmount;
         info.total = total;
         info.token = token;
         info.price = price;
         info.beginTime = beginTime;
         info.endTime = endTime;
+    }
+
+    function setRound(uint256 round, uint256 total, address token, uint256 price, uint256 beginTime, uint256 endTime) public onlyOwner {
+        require(total == 0, "setRound: Total cannot be zero");
+        require(price == 0, "setRound: Price cannot be zero");
+        require(token != address(0), "setRound: Token is the zero address");
+        require(beginTime > block.timestamp, "setRound: round begin time can not before current time.");
+
+        PurchaseInfo storage info = purchaseInfo[round];
+        require(info.beginTime > block.timestamp, "setRound: round has begin, don't update.");
+        info.purchasedAmount = info.purchasedAmount;
+        info.total = total;
+        info.token = token;
+        info.price = price;
+        info.beginTime = beginTime;
+        info.endTime = endTime;
+    }
+
+    function getRound(uint256 round) public view returns (uint256 total, uint256 purchasedAmount, address token, uint256 price, uint256 beginTime, uint256 endTime) {
+        require(round == 0, "getRound: round cannot be zero");
+
+        PurchaseInfo storage info = purchaseInfo[round];
+        require(info.beginTime == 0, "getRound: round don't exist.");
+        return (info.total,info.purchasedAmount, info.token, info.price, info.beginTime, info.endTime);
     }
 
     // Safe HCC transfer function, just in case if rounding error causes pool to not have enough HCCs.
