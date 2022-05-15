@@ -1037,10 +1037,9 @@ contract HCCPurchase is Ownable {
         require(price == 0, "setRound: Price cannot be zero");
         require(token != address(0), "setRound: Token is the zero address");
         require(beginTime < block.timestamp, "setRound: round begin time can not before current time.");
-        require(endTime < block.timestamp, "setRound: round end time can not before current time.");
 
         PurchaseInfo storage info = purchaseInfo[round];
-        require(info.beginTime < block.timestamp, "setRound: round has begin, forbidden update.");
+        require(info.beginTime < block.timestamp && endTime > block.timestamp, "setRound: round has begin, forbidden update.");
         require(info.total == 0, "setRound: round don't exist.");
         info.purchasedAmount = info.purchasedAmount;
         info.total = total;
