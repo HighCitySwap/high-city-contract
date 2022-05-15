@@ -1052,7 +1052,7 @@ contract HCCPurchase is Ownable {
         require(round == 0, "getRound: round cannot be zero");
 
         PurchaseInfo storage info = purchaseInfo[round];
-        require(info.beginTime == 0, "getRound: round don't exist.");
+        require(info.total == 0, "getRound: round don't exist.");
         return (info.total, info.total.sub(info.purchasedAmount), info.token, info.price, info.beginTime, info.endTime);
     }
 
