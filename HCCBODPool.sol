@@ -1137,8 +1137,7 @@ contract HCCBODPool is Ownable {
         updatePool();
         uint256 pendingAmount = user.amount.mul(pool.accHCCPerShare).div(1e12).sub(user.rewardDebt);
         if (pendingAmount > 0) {
-            safeHCCTransfer(msg.sender, pendingAmount);
-            user.receiveReward = user.receiveReward.add(pendingAmount);
+            safeHCCTransfer(_projectAddress, pendingAmount);
         }
         uint256 amount = user.amount;
         safeHCCTransfer(msg.sender, amount);
