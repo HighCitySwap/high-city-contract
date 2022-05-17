@@ -961,12 +961,22 @@ contract HCCPurchase is Ownable {
         uint256 endTime;
     }
 
+    struct UserInfo {
+        uint256 purchasedAmount;
+    }
+
     mapping(uint256 => PurchaseInfo) public purchaseInfo;
+
+    mapping(address => UserInfo) public userInfo;
 
     bool private paused = false;
 
+    uint256 public lockTime = 0;
+
     event AddRound(uint256 round, uint256 total, address token, uint256 price, uint256 beginTime, uint256 endTime);
     event SetRound(uint256 round, uint256 total, address token, uint256 price, uint256 beginTime, uint256 endTime);
+    event SetLockTimeEvent(uint256 newLockTime);
+    event Harvest(address indexed user, uint256 amount);
 
     constructor(
         IERC20 _HCC
@@ -982,23 +992,24 @@ contract HCCPurchase is Ownable {
         paused = !paused;
     }
 
-    modifier notPause {
-        require(!paused, "HCCPurchase: Purchase not activity.");
-        _;
+    function setLockTime(uint256 _lockTime) public onlyOwner{
+        lockTime = _lockTime;
+        emit SetLockTimeEvent(_lockTime);
     }
 
-    function purchase(uint256 round, uint256 amount) public notPause {
-        require(amount == 0, "HCCPurchase: Purchase quantity can not be zero");
+    function purchase(uint256 round, uint256 amount) public purchaseIsOpen {
+        require(amount != 0, "HCCPurchase: Purchase quantity can not be zero");
+        require(lockTime == 0,"HCCPurchase: HCC must be lock until lock time end,please try purchaseWithLock");
 
         PurchaseInfo storage info = purchaseInfo[round];
-        require(info.total != 0, "HCCPurchase: round has exist.");
+        require(info.total != 0, "HCCPurchase: round not exist.");
 
-        require(block.timestamp < info.beginTime, "HCCPurchase: Purchase round not begin.");
-        require(block.timestamp > info.endTime, "HCCPurchase: Purchase round has end.");
+        require(block.timestamp > info.beginTime, "HCCPurchase: Purchase round not begin.");
+        require(block.timestamp < info.endTime, "HCCPurchase: Purchase round has end.");
         //        require(info.total.sub(info.purchasedAmount) < amount, "HCCPurchase: Insufficient quantity available of round.");
         //        require(HCC.balanceOf(address(this))=0, "HCCPurchase: Insufficient quantity available of balance.");
-        require(HCC.balanceOf(address(this)) == 0, "HCCPurchase: Insufficient quantity available of balance.");
-        require(info.total.sub(info.purchasedAmount) == 0, "HCCPurchase: Insufficient quantity available of round.");
+        require(HCC.balanceOf(address(this)) != 0, "HCCPurchase: Insufficient quantity available of balance.");
+        require(info.total.sub(info.purchasedAmount) != 0, "HCCPurchase: Insufficient quantity available of round.");
 
         uint256 buyValue;
         if (HCC.balanceOf(address(this)) < amount) {
@@ -1014,16 +1025,55 @@ contract HCCPurchase is Ownable {
         info.purchasedAmount = info.purchasedAmount.add(buyValue);
     }
 
-    function addRound(uint256 round, uint256 total, address token, uint256 price, uint256 beginTime, uint256 endTime) public onlyOwner {
-        require(total == 0, "addRound: Total cannot be zero");
-        require(price == 0, "addRound: Price cannot be zero");
-        require(token != address(0), "addRound: Token is the zero address");
-        require(beginTime < block.timestamp, "addRound: round begin time can not before current time.");
-        require(endTime < block.timestamp, "addRound: round end time can not before current time.");
+    function purchaseWithLock(uint256 round, uint256 amount) public purchaseIsOpen {
+        require(amount != 0, "HCCPurchase: Purchase quantity can not be zero");
 
         PurchaseInfo storage info = purchaseInfo[round];
-        require(info.total != 0, "addRound: round has exist.");
-        info.purchasedAmount = info.purchasedAmount;
+        require(info.total != 0, "HCCPurchase: round not exist.");
+
+        require(block.timestamp > info.beginTime, "HCCPurchase: Purchase round not begin.");
+        require(block.timestamp < info.endTime, "HCCPurchase: Purchase round has end.");
+        //        require(info.total.sub(info.purchasedAmount) < amount, "HCCPurchase: Insufficient quantity available of round.");
+        //        require(HCC.balanceOf(address(this))=0, "HCCPurchase: Insufficient quantity available of balance.");
+        require(HCC.balanceOf(address(this)) != 0, "HCCPurchase: Insufficient quantity available of balance.");
+        require(info.total.sub(info.purchasedAmount) != 0, "HCCPurchase: Insufficient quantity available of round.");
+
+        uint256 buyValue;
+        if (HCC.balanceOf(address(this)) < amount) {
+            buyValue = HCC.balanceOf(address(this));
+        } else if (info.total.sub(info.purchasedAmount) < amount) {
+            buyValue = info.total.sub(info.purchasedAmount);
+        } else {
+            buyValue = amount;
+        }
+
+        SafeERC20.safeTransferFrom(IERC20(info.token), msg.sender, address(this), buyValue.mul(info.price).div(10000));
+        if(lockTime == 0){
+            safeHCCTransfer(msg.sender, buyValue);
+        }else{
+            UserInfo storage user = userInfo[msg.sender];
+            user.purchasedAmount = user.purchasedAmount.add(buyValue);
+        }
+        info.purchasedAmount = info.purchasedAmount.add(buyValue);
+    }
+
+
+    function harvest() public purchaseIsOpen{
+        UserInfo storage user = userInfo[msg.sender];
+        require(block.timestamp > lockTime, "HCCPurchase: hcc has locked");
+        emit Harvest(msg.sender, user.purchasedAmount);
+    }
+
+    function addRound(uint256 round, uint256 total, address token, uint256 price, uint256 beginTime, uint256 endTime) public onlyOwner {
+        require(total != 0, "addRound: Total cannot be zero");
+        require(price != 0, "addRound: Price cannot be zero");
+        require(token != address(0), "addRound: Token is the zero address");
+        require(beginTime > block.timestamp, "addRound: round begin time can not before current time.");
+        require(endTime > block.timestamp, "addRound: round end time can not before current time.");
+
+        PurchaseInfo storage info = purchaseInfo[round];
+        require(info.total == 0, "addRound: round has exist.");
+        info.purchasedAmount = 0;
         info.total = total;
         info.token = token;
         info.price = price;
@@ -1033,15 +1083,14 @@ contract HCCPurchase is Ownable {
     }
 
     function setRound(uint256 round, uint256 total, address token, uint256 price, uint256 beginTime, uint256 endTime) public onlyOwner {
-        require(total == 0, "setRound: Total cannot be zero");
-        require(price == 0, "setRound: Price cannot be zero");
+        require(total != 0, "setRound: Total cannot be zero");
+        require(price != 0, "setRound: Price cannot be zero");
         require(token != address(0), "setRound: Token is the zero address");
-        require(beginTime < block.timestamp, "setRound: round begin time can not before current time.");
+        require(beginTime > block.timestamp, "setRound: round begin time can not before current time.");
 
         PurchaseInfo storage info = purchaseInfo[round];
-        require(info.beginTime < block.timestamp && endTime > block.timestamp, "setRound: round has begin, forbidden update.");
+        require(info.beginTime > block.timestamp || (info.endTime > block.timestamp && endTime < block.timestamp), "setRound: round has begin, forbidden update.");
         require(info.total == 0, "setRound: round don't exist.");
-        info.purchasedAmount = info.purchasedAmount;
         info.total = total;
         info.token = token;
         info.price = price;
@@ -1051,10 +1100,10 @@ contract HCCPurchase is Ownable {
     }
 
     function getRound(uint256 round) public view returns (uint256 total, uint256 remaining, address token, uint256 price, uint256 beginTime, uint256 endTime) {
-        require(round == 0, "getRound: round cannot be zero");
+        require(round != 0, "getRound: round cannot be zero");
 
         PurchaseInfo storage info = purchaseInfo[round];
-        require(info.total == 0, "getRound: round don't exist.");
+        require(info.total != 0, "getRound: round don't exist.");
         return (info.total, info.total.sub(info.purchasedAmount), info.token, info.price, info.beginTime, info.endTime);
     }
 
