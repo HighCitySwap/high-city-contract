@@ -1107,6 +1107,11 @@ contract HCCPurchase is Ownable {
         return (info.total, info.total.sub(info.purchasedAmount), info.token, info.price, info.beginTime, info.endTime);
     }
 
+    function _userInfo() public view returns (uint256 amount) {
+        UserInfo storage user = userInfo[msg.sender];
+        return (user.purchasedAmount);
+    }
+
     // Safe HCC transfer function, just in case if rounding error causes pool to not have enough HCCs.
     function safeHCCTransfer(address _to, uint256 _amount) internal {
         uint256 HCCBal = HCC.balanceOf(address(this));
@@ -1118,6 +1123,3 @@ contract HCCPurchase is Ownable {
     }
 
 }
-
-
-
