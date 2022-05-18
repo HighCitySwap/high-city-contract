@@ -1020,7 +1020,7 @@ contract HCCPurchase is Ownable {
             buyValue = amount;
         }
 
-        SafeERC20.safeTransferFrom(IERC20(info.token), msg.sender, address(this), buyValue.mul(info.price).div(10000));
+        SafeERC20.safeTransferFrom(IERC20(info.token), msg.sender, address(this), buyValue.mul(info.price).div(1e18));
         safeHCCTransfer(msg.sender, buyValue);
         info.purchasedAmount = info.purchasedAmount.add(buyValue);
     }
@@ -1047,7 +1047,7 @@ contract HCCPurchase is Ownable {
             buyValue = amount;
         }
 
-        SafeERC20.safeTransferFrom(IERC20(info.token), msg.sender, address(this), buyValue.mul(info.price).div(10000));
+        SafeERC20.safeTransferFrom(IERC20(info.token), msg.sender, address(this), buyValue.mul(info.price).div(1e18));
         if(lockTime == 0){
             safeHCCTransfer(msg.sender, buyValue);
         }else{
