@@ -992,14 +992,14 @@ contract HCCPurchase is Ownable {
         paused = !paused;
     }
 
-    function setLockTime(uint256 _lockTime) public onlyOwner{
+    function setLockTime(uint256 _lockTime) public onlyOwner {
         lockTime = _lockTime;
         emit SetLockTimeEvent(_lockTime);
     }
 
     function purchase(uint256 round, uint256 amount) public purchaseIsOpen {
         require(amount != 0, "HCCPurchase: Purchase quantity can not be zero");
-        require(lockTime == 0,"HCCPurchase: HCC must be lock until lock time end,please try purchaseWithLock");
+        require(lockTime == 0, "HCCPurchase: HCC must be lock until lock time end,please try purchaseWithLock");
 
         PurchaseInfo storage info = purchaseInfo[round];
         require(info.total != 0, "HCCPurchase: round not exist.");
@@ -1048,9 +1048,9 @@ contract HCCPurchase is Ownable {
         }
 
         SafeERC20.safeTransferFrom(IERC20(info.token), msg.sender, address(this), buyValue.mul(info.price).div(1e18));
-        if(lockTime == 0){
+        if (lockTime == 0) {
             safeHCCTransfer(msg.sender, buyValue);
-        }else{
+        } else {
             UserInfo storage user = userInfo[msg.sender];
             user.purchasedAmount = user.purchasedAmount.add(buyValue);
         }
@@ -1058,7 +1058,7 @@ contract HCCPurchase is Ownable {
     }
 
 
-    function harvest() public purchaseIsOpen{
+    function harvest() public purchaseIsOpen {
         UserInfo storage user = userInfo[msg.sender];
         require(block.timestamp > lockTime, "HCCPurchase: hcc has locked");
         emit Harvest(msg.sender, user.purchasedAmount);
