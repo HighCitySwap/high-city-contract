@@ -1068,7 +1068,6 @@ contract HCCPurchase is Ownable {
         require(total != 0, "addRound: Total cannot be zero");
         require(price != 0, "addRound: Price cannot be zero");
         require(token != address(0), "addRound: Token is the zero address");
-        require(beginTime > block.timestamp, "addRound: round begin time can not before current time.");
         require(endTime > block.timestamp, "addRound: round end time can not before current time.");
 
         PurchaseInfo storage info = purchaseInfo[round];
@@ -1086,7 +1085,6 @@ contract HCCPurchase is Ownable {
         require(total != 0, "setRound: Total cannot be zero");
         require(price != 0, "setRound: Price cannot be zero");
         require(token != address(0), "setRound: Token is the zero address");
-        require(beginTime > block.timestamp, "setRound: round begin time can not before current time.");
 
         PurchaseInfo storage info = purchaseInfo[round];
         require(info.beginTime > block.timestamp || (info.endTime > block.timestamp && endTime < block.timestamp), "setRound: round has begin, forbidden update.");
@@ -1105,11 +1103,6 @@ contract HCCPurchase is Ownable {
         PurchaseInfo storage info = purchaseInfo[round];
         require(info.total != 0, "getRound: round don't exist.");
         return (info.total, info.total.sub(info.purchasedAmount), info.token, info.price, info.beginTime, info.endTime);
-    }
-
-    function _userInfo() public view returns (uint256 amount) {
-        UserInfo storage user = userInfo[msg.sender];
-        return (user.purchasedAmount);
     }
 
     // Safe HCC transfer function, just in case if rounding error causes pool to not have enough HCCs.
