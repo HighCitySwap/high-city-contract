@@ -1061,7 +1061,12 @@ contract HCCPurchase is Ownable {
     function harvest() public purchaseIsOpen {
         UserInfo storage user = userInfo[msg.sender];
         require(block.timestamp > lockTime, "HCCPurchase: hcc has locked");
-        emit Harvest(msg.sender, user.purchasedAmount);
+        uint256 amount = user.purchasedAmount;
+        if (amount > 0) {
+            safeHCCTransfer(msg.sender, amount);
+        }
+        user.purchasedAmount = 0;
+        emit Harvest(msg.sender, amount);
     }
 
     function addRound(uint256 round, uint256 total, address token, uint256 price, uint256 beginTime, uint256 endTime) public onlyOwner {
