@@ -1048,7 +1048,7 @@ contract HCCPurchase is Ownable {
         }
 
         SafeERC20.safeTransferFrom(IERC20(info.token), msg.sender, address(this), buyValue.mul(info.price).div(1e18));
-        if (lockTime == 0) {
+        if (lockTime == 0 || block.timestamp > lockTime) {
             safeHCCTransfer(msg.sender, buyValue);
         } else {
             UserInfo storage user = userInfo[msg.sender];
