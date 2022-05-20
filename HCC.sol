@@ -1078,7 +1078,7 @@ contract HCCToken is ERC20, Ownable {
     }
 
     function setDividendRatio(uint256 teamRewardRatio, uint256 nftOwnerRewardRatio, uint256 BODRewardRatio, uint256 stakeRewardRatio) public onlyOwner {
-//        require(teamRewardRatio + nftOwnerRewardRatio + BODRewardRatio + stakeRewardRatio == 100, "ratio must be 100");
+        //        require(teamRewardRatio + nftOwnerRewardRatio + BODRewardRatio + stakeRewardRatio == 100, "ratio must be 100");
         _dividendRatio.teamRewardRatio = teamRewardRatio;
         _dividendRatio.nftOwnerRewardRatio = nftOwnerRewardRatio;
         _dividendRatio.BODRewardRatio = BODRewardRatio;
@@ -1100,7 +1100,7 @@ contract HCCToken is ERC20, Ownable {
             _transfer(address(this), _nftOwnerRewardPool, nftOwnerReward);
             _transfer(address(this), _BODRewardPool, BODReward);
             _transfer(address(this), _stakeRewardPool, stakeRewardRatio);
-            _burn(address(this), address(0), blackHole);
+            _burn(address(this), blackHole);
         }
     }
 
