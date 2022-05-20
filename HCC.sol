@@ -1100,7 +1100,7 @@ contract HCCToken is ERC20, Ownable {
             _transfer(address(this), _nftOwnerRewardPool, nftOwnerReward);
             _transfer(address(this), _BODRewardPool, BODReward);
             _transfer(address(this), _stakeRewardPool, stakeRewardRatio);
-            _transfer(address(this), address(0), blackHole);
+            _burn(address(this), address(0), blackHole);
         }
     }
 
