@@ -977,6 +977,7 @@ contract HCCPurchase is Ownable {
     event SetRound(uint256 round, uint256 total, address token, uint256 price, uint256 beginTime, uint256 endTime);
     event SetLockTimeEvent(uint256 newLockTime);
     event Harvest(address indexed user, uint256 amount);
+    event Purchase(address indexed user, uint256 buy, uint256 pay, bool isCredited);
 
     constructor(
         IERC20 _HCC
@@ -1019,10 +1020,11 @@ contract HCCPurchase is Ownable {
         } else {
             buyValue = amount;
         }
-
-        SafeERC20.safeTransferFrom(IERC20(info.token), msg.sender, address(this), buyValue.mul(info.price).div(1e18));
+        uint256 pay = buyValue.mul(info.price).div(1e18);
+        SafeERC20.safeTransferFrom(IERC20(info.token), msg.sender, address(this), pay);
         safeHCCTransfer(msg.sender, buyValue);
         info.purchasedAmount = info.purchasedAmount.add(buyValue);
+        emit Purchase(msg.sender, buyValue, pay, true);
     }
 
     function purchaseWithLock(uint256 round, uint256 amount) public purchaseIsOpen {
@@ -1046,15 +1048,17 @@ contract HCCPurchase is Ownable {
         } else {
             buyValue = amount;
         }
-
-        SafeERC20.safeTransferFrom(IERC20(info.token), msg.sender, address(this), buyValue.mul(info.price).div(1e18));
-        if (lockTime == 0 || block.timestamp > lockTime) {
+        uint256 pay = buyValue.mul(info.price).div(1e18);
+        SafeERC20.safeTransferFrom(IERC20(info.token), msg.sender, address(this), pay);
+        bool isCredited = lockTime == 0 || block.timestamp > lockTime;
+        if (isCredited) {
             safeHCCTransfer(msg.sender, buyValue);
         } else {
             UserInfo storage user = userInfo[msg.sender];
             user.purchasedAmount = user.purchasedAmount.add(buyValue);
         }
         info.purchasedAmount = info.purchasedAmount.add(buyValue);
+        emit Purchase(msg.sender, buyValue, pay, isCredited);
     }
 
 

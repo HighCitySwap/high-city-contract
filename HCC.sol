@@ -995,7 +995,6 @@ contract HCCToken is ERC20, Ownable {
     using SafeMath for uint256;
     uint256 public constant maxSupply = 1 * 1e8 * 1e18;
     uint256 private constant preMineSupply = 10000 * 1e18;
-    address public constant blackHole = 0x0000000000000000000000000000000000000000;
     address public _teamRewardAdderss;
     address public _nftOwnerRewardPool;
     address public _BODRewardPool;
@@ -1013,7 +1012,7 @@ contract HCCToken is ERC20, Ownable {
         uint256 nftOwnerRewardRatio;
         uint256 BODRewardRatio;
         uint256 stakeRewardRatio;
-        uint256 blackHole;
+        uint256 blackHoleRatio;
     }
 
     event feeChange(uint256 fee, uint256 changeTime);
@@ -1022,6 +1021,7 @@ contract HCCToken is ERC20, Ownable {
     event BODRewardPoolChange(address newAddress, uint256 changeTime);
     event stakeRewardPoolChange(address newAddress, uint256 changeTime);
     event DividendRatioChange(uint256 teamRewardRatio, uint256 nftOwnerRewardRatio, uint256 BODRewardRatio, uint256 stakeRewardRatio, uint256 blackHoleRatio, uint256 changeTime);
+    event TransferDetail(address from,address to,uint256 amount,uint256 realAmount,uint256 fee);
     constructor(
         address teamRewardAdderss,
         address nftOwnerRewardPool,
@@ -1077,14 +1077,14 @@ contract HCCToken is ERC20, Ownable {
         emit stakeRewardPoolChange(_stakeRewardPool, block.timestamp);
     }
 
-    function setDividendRatio(uint256 teamRewardRatio, uint256 nftOwnerRewardRatio, uint256 BODRewardRatio, uint256 stakeRewardRatio) public onlyOwner {
-        //        require(teamRewardRatio + nftOwnerRewardRatio + BODRewardRatio + stakeRewardRatio == 100, "ratio must be 100");
+    function setDividendRatio(uint256 teamRewardRatio, uint256 nftOwnerRewardRatio, uint256 BODRewardRatio, uint256 stakeRewardRatio, uint256 blackHoleRatio) public onlyOwner {
+        require(teamRewardRatio + nftOwnerRewardRatio + BODRewardRatio + stakeRewardRatio + blackHoleRatio == 100, "ratio must be 100");
         _dividendRatio.teamRewardRatio = teamRewardRatio;
         _dividendRatio.nftOwnerRewardRatio = nftOwnerRewardRatio;
         _dividendRatio.BODRewardRatio = BODRewardRatio;
         _dividendRatio.stakeRewardRatio = stakeRewardRatio;
-        _dividendRatio.blackHole = uint256(100).sub(teamRewardRatio.add(nftOwnerRewardRatio).add(BODRewardRatio).add(stakeRewardRatio));
-        emit DividendRatioChange(teamRewardRatio, nftOwnerRewardRatio, BODRewardRatio, stakeRewardRatio, _dividendRatio.blackHole, block.timestamp);
+        _dividendRatio.blackHoleRatio = blackHoleRatio;
+        emit DividendRatioChange(teamRewardRatio, nftOwnerRewardRatio, BODRewardRatio, stakeRewardRatio, blackHoleRatio, block.timestamp);
     }
 
     function operateFee(uint256 fee) internal {
@@ -1095,12 +1095,14 @@ contract HCCToken is ERC20, Ownable {
             uint256 nftOwnerReward = _maxRewardFee.mul(_dividendRatio.nftOwnerRewardRatio).div(100);
             uint256 BODReward = _maxRewardFee.mul(_dividendRatio.BODRewardRatio).div(100);
             uint256 stakeRewardRatio = _maxRewardFee.mul(_dividendRatio.stakeRewardRatio).div(100);
-            uint256 blackHole = _maxRewardFee.mul(_dividendRatio.blackHole).div(100);
+            uint256 blackHole = _maxRewardFee.mul(_dividendRatio.blackHoleRatio).div(100);
             _transfer(address(this), _teamRewardAdderss, teamReward);
             _transfer(address(this), _nftOwnerRewardPool, nftOwnerReward);
             _transfer(address(this), _BODRewardPool, BODReward);
             _transfer(address(this), _stakeRewardPool, stakeRewardRatio);
-            _burn(address(this), blackHole);
+            if (blackHole > 0){
+                _burn(address(this), blackHole);
+            }
         }
     }
 
@@ -1118,6 +1120,7 @@ contract HCCToken is ERC20, Ownable {
             _transfer(_msgSender(), address(this), fee);
             operateFee(fee);
         }
+        emit TransferDetail(_msgSender(), recipient, amount, sendValue, fee);
         return true;
     }
 
@@ -1136,6 +1139,7 @@ contract HCCToken is ERC20, Ownable {
             _transfer(sender, address(this), fee);
             operateFee(fee);
         }
+        emit TransferDetail(sender, recipient, amount, sendValue, fee);
         return true;
     }
 
