@@ -865,7 +865,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
         require(_owner != address(0), "Invalid owner");
         transferOwnership(_owner);
 
-        require(_hccToken != address(0), "Invalid address");
+        require(_h'c'c != address(0), "Invalid address");
         hccToken = ERC20Interface(_hccToken);
         require(_nftAddress != address(0), "Invalid nftAddress");
         nftAddress = _nftAddress;
@@ -904,6 +904,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
 
     /**
       * @dev Creates a new order
+    * @param nftAddress - Non fungible registry address
     * @param assetId - ID of the published NFT
     * @param priceInWei - Price in Wei for the supported coin
     * @param expiresAt - Duration of the order (in hours)
@@ -926,6 +927,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
     /**
       * @dev Cancel an already published order
     *  can only be canceled by seller or the contract owner
+    * @param nftAddress - Address of the NFT registry
     * @param assetId - ID of the published NFT
     */
     function cancelOrder(uint256 assetId) public whenNotPaused {
@@ -934,6 +936,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
 
     /**
       * @dev Executes the sale for a published NFT and checks for the asset fingerprint
+    * @param nftAddress - Address of the NFT registry
     * @param assetId - ID of the published NFT
     * @param price - Order price
     * @param fingerprint - Verification info for the asset
@@ -955,6 +958,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
 
     /**
       * @dev Executes the sale for a published NFT
+    * @param nftAddress - Address of the NFT registry
     * @param assetId - ID of the published NFT
     * @param price - Order price
     */
@@ -974,6 +978,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
 
     /**
       * @dev Creates a new order
+    * @param nftAddress - Non fungible registry address
     * @param assetId - ID of the published NFT
     * @param priceInWei - Price in Wei for the supported coin
     * @param expiresAt - Duration of the order (in hours)
@@ -1038,6 +1043,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
     /**
       * @dev Cancel an already published order
     *  can only be canceled by seller or the contract owner
+    * @param nftAddress - Address of the NFT registry
     * @param assetId - ID of the published NFT
     */
     function _cancelOrder(uint256 assetId) internal returns (Order memory) {
@@ -1064,6 +1070,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
 
     /**
       * @dev Executes the sale for a published NFT
+    * @param nftAddress - Address of the NFT registry
     * @param assetId - ID of the published NFT
     * @param price - Order price
     * @param fingerprint - Verification info for the asset
