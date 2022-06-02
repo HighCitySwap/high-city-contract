@@ -288,7 +288,7 @@ library AddressUpgradeable {
      * _Available since v3.1._
      */
     function functionCall(address target, bytes memory data) internal returns (bytes memory) {
-      return functionCall(target, data, "Address: low-level call failed");
+        return functionCall(target, data, "Address: low-level call failed");
     }
 
     /**
@@ -422,39 +422,39 @@ abstract contract Initializable {
  * @title Interface for contracts conforming to ERC-20
  */
 interface ERC20Interface {
-  function transferFrom(address from, address to, uint tokens) external returns (bool success);
+    function transferFrom(address from, address to, uint tokens) external returns (bool success);
 }
 
 /**
  * @title Interface for contracts conforming to ERC-721
  */
 interface ERC721Interface {
-  function ownerOf(uint256 _tokenId) external view returns (address _owner);
-  function approve(address _to, uint256 _tokenId) external;
-  function getApproved(uint256 _tokenId) external view returns (address);
-  function isApprovedForAll(address _owner, address _operator) external view returns (bool);
-  function safeTransferFrom(address _from, address _to, uint256 _tokenId) external;
-  function supportsInterface(bytes4) external view returns (bool);
+    function ownerOf(uint256 _tokenId) external view returns (address _owner);
+    function approve(address _to, uint256 _tokenId) external;
+    function getApproved(uint256 _tokenId) external view returns (address);
+    function isApprovedForAll(address _owner, address _operator) external view returns (bool);
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId) external;
+    function supportsInterface(bytes4) external view returns (bool);
 }
 
 interface ERC721Verifiable is ERC721Interface {
-  function verifyFingerprint(uint256, bytes memory) external view returns (bool);
+    function verifyFingerprint(uint256, bytes memory) external view returns (bool);
 }
 
 contract ContextMixin {
     function _msgSender()
-        internal
-        view
-        returns (address sender)
+    internal
+    view
+    returns (address sender)
     {
         if (msg.sender == address(this)) {
             bytes memory array = msg.data;
             uint256 index = msg.data.length;
             assembly {
-                // Load the 32 bytes word from memory with the address on the lower 20 bytes, and mask those.
+            // Load the 32 bytes word from memory with the address on the lower 20 bytes, and mask those.
                 sender := and(
-                    mload(add(array, index)),
-                    0xffffffffffffffffffffffffffffffffffffffff
+                mload(add(array, index)),
+                0xffffffffffffffffffffffffffffffffffffffff
                 )
             }
         } else {
@@ -635,7 +635,7 @@ contract EIP712Base {
         string memory name,
         string memory version
     )
-        internal
+    internal
     {
         domainSeparator = keccak256(
             abi.encode(
@@ -664,14 +664,14 @@ contract EIP712Base {
      * "\\x01" is the version byte to make it compatible to EIP-191
      */
     function toTypedMessageHash(bytes32 messageHash)
-        internal
-        view
-        returns (bytes32)
+    internal
+    view
+    returns (bytes32)
     {
         return
-            keccak256(
-                abi.encodePacked("\x19\x01", domainSeparator, messageHash)
-            );
+        keccak256(
+            abi.encodePacked("\x19\x01", domainSeparator, messageHash)
+        );
     }
 }
 
@@ -707,9 +707,9 @@ contract NativeMetaTransaction is EIP712Base {
         uint8 sigV
     ) public payable returns (bytes memory) {
         MetaTransaction memory metaTx = MetaTransaction({
-            nonce: nonces[userAddress],
-            from: userAddress,
-            functionSignature: functionSignature
+        nonce: nonces[userAddress],
+        from: userAddress,
+        functionSignature: functionSignature
         });
 
         require(
@@ -736,19 +736,19 @@ contract NativeMetaTransaction is EIP712Base {
     }
 
     function hashMetaTransaction(MetaTransaction memory metaTx)
-        internal
-        pure
-        returns (bytes32)
+    internal
+    pure
+    returns (bytes32)
     {
         return
-            keccak256(
-                abi.encode(
-                    META_TRANSACTION_TYPEHASH,
-                    metaTx.nonce,
-                    metaTx.from,
-                    keccak256(metaTx.functionSignature)
-                )
-            );
+        keccak256(
+            abi.encode(
+                META_TRANSACTION_TYPEHASH,
+                metaTx.nonce,
+                metaTx.from,
+                keccak256(metaTx.functionSignature)
+            )
+        );
     }
 
     function getNonce(address user) public view returns (uint256 nonce) {
@@ -764,401 +764,394 @@ contract NativeMetaTransaction is EIP712Base {
     ) internal view returns (bool) {
         require(signer != address(0), "NMT#verify: INVALID_SIGNER");
         return
-            signer ==
-            ecrecover(
-                toTypedMessageHash(hashMetaTransaction(metaTx)),
-                sigV,
-                sigR,
-                sigS
-            );
+        signer ==
+        ecrecover(
+            toTypedMessageHash(hashMetaTransaction(metaTx)),
+            sigV,
+            sigR,
+            sigS
+        );
     }
 }
 contract MarketplaceStorage {
-  address public teamAddress;
-  ERC20Interface public hccToken;
+    address public teamAddress;
+    ERC20Interface public hccToken;
 
-  struct Order {
-    // Order ID
-    bytes32 id;
-    // Owner of the NFT
-    address seller;
-    // NFT registry address
-    address nftAddress;
-    // Price (in wei) for the published item
-    uint256 price;
-    // Time when this sale ends
-    uint256 expiresAt;
-  }
+    struct Order {
+        // Order ID
+        bytes32 id;
+        // Owner of the NFT
+        address seller;
+        // NFT registry address
+        address nftAddress;
+        // Price (in wei) for the published item
+        uint256 price;
+        // Time when this sale ends
+        uint256 expiresAt;
+    }
 
-  // From ERC721 registry assetId to Order (to avoid asset collision)
-  mapping (address => mapping(uint256 => Order)) public orderByAssetId;
+    // From ERC721 registry assetId to Order (to avoid asset collision)
+    mapping (address => mapping(uint256 => Order)) public orderByAssetId;
 
-  uint256 public tradeFee;
-  uint256 public publicationFeeInWei;
+    uint256 public tradeFee;
+    uint256 public publicationFeeInWei;
 
-  bytes4 public constant InterfaceId_ValidateFingerprint = bytes4(
-    keccak256("verifyFingerprint(uint256,bytes)")
-  );
+    bytes4 public constant InterfaceId_ValidateFingerprint = bytes4(
+        keccak256("verifyFingerprint(uint256,bytes)")
+    );
 
-  bytes4 public constant ERC721_Interface = bytes4(0x80ac58cd);
-  address public nftAddress;
-  // EVENTS
-  event OrderCreated(
-    bytes32 id,
-    uint256 indexed assetId,
-    address indexed seller,
-    address nftAddress,
-    uint256 priceInWei,
-    uint256 expiresAt
-  );
-  event OrderSuccessful(
-    bytes32 id,
-    uint256 indexed assetId,
-    address indexed seller,
-    address nftAddress,
-    uint256 totalPrice,
-    address indexed buyer
-  );
-  event OrderCancelled(
-    bytes32 id,
-    uint256 indexed assetId,
-    address indexed seller,
-    address nftAddress
-  );
+    bytes4 public constant ERC721_Interface = bytes4(0x80ac58cd);
+    address public nftAddress;
+    // EVENTS
+    event OrderCreated(
+        bytes32 id,
+        uint256 indexed assetId,
+        address indexed seller,
+        address nftAddress,
+        uint256 priceInWei,
+        uint256 expiresAt
+    );
+    event OrderSuccessful(
+        bytes32 id,
+        uint256 indexed assetId,
+        address indexed seller,
+        address nftAddress,
+        uint256 totalPrice,
+        address indexed buyer
+    );
+    event OrderCancelled(
+        bytes32 id,
+        uint256 indexed assetId,
+        address indexed seller,
+        address nftAddress
+    );
 
-  event ChangedTeamAddress(address teamAddress);
-  event ChangedPublicationFee(uint256 publicationFee);
-  event ChangedTradeFee(uint256 tradeFee);
+    event ChangedTeamAddress(address teamAddress);
+    event ChangedPublicationFee(uint256 publicationFee);
+    event ChangedTradeFee(uint256 tradeFee);
 }
 
 
 contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage, NativeMetaTransaction {
-  using SafeMathUpgradeable for uint256;
-  using AddressUpgradeable for address;
+    using SafeMathUpgradeable for uint256;
+    using AddressUpgradeable for address;
 
-  /**
-    * @dev Initialize this contract. Acts as a constructor
+    /**
+      * @dev Initialize this contract. Acts as a constructor
     * @param _hccToken - Address of the main ERC20 accepted for this marketplace
     * @param _tradeFee - owner cut per million
     */
-  constructor (
-    address _hccToken,
-    uint256 _tradeFee,
-    address _owner,
-    address _teamAddress,
-    address _nftAddress
-  )
+    constructor (
+        address _hccToken,
+        uint256 _tradeFee,
+        address _owner,
+        address _teamAddress,
+        address _nftAddress
+    )
     public
     initializer
-  {
-    Ownable_init();
-    Pausable_init();
+    {
+        Ownable_init();
+        Pausable_init();
 
-    // EIP712 init
-    _initializeEIP712('TKS Marketplace', '1');
+        // EIP712 init
+        _initializeEIP712('TKS Marketplace', '1');
 
-    // Fee init
-    settradeFee(_tradeFee);
+        // Fee init
+        settradeFee(_tradeFee);
 
-    setteamAddress(_teamAddress);
+        setteamAddress(_teamAddress);
 
-    require(_owner != address(0), "Invalid owner");
-    transferOwnership(_owner);
+        require(_owner != address(0), "Invalid owner");
+        transferOwnership(_owner);
 
-    require(_h'c'c != address(0), "Invalid address");
-    hccToken = ERC20Interface(_hccToken);
-    require(_nftAddress != address(0), "Invalid nftAddress");
-    nftAddress = _nftAddress;
-  }
+        require(_hccToken != address(0), "Invalid address");
+        hccToken = ERC20Interface(_hccToken);
+        require(_nftAddress != address(0), "Invalid nftAddress");
+        nftAddress = _nftAddress;
+    }
 
-  /**
-    * @dev Sets the publication fee that's charged to users to publish items
+    /**
+      * @dev Sets the publication fee that's charged to users to publish items
     * @param _teamAddress - address of the teamAddress for collecting fees
     */
-  function setteamAddress(address _teamAddress) public onlyOwner {
-    require(_teamAddress != address(0), "Invalid teamAddress");
-    teamAddress = _teamAddress;
-    emit ChangedTeamAddress(teamAddress);
-  }
+    function setteamAddress(address _teamAddress) public onlyOwner {
+        require(_teamAddress != address(0), "Invalid teamAddress");
+        teamAddress = _teamAddress;
+        emit ChangedTeamAddress(teamAddress);
+    }
 
-  /**
-    * @dev Sets the publication fee that's charged to users to publish items
+    /**
+      * @dev Sets the publication fee that's charged to users to publish items
     * @param _publicationFee - Fee amount in wei this contract charges to publish an item
     */
-  function setPublicationFee(uint256 _publicationFee) external onlyOwner {
-    publicationFeeInWei = _publicationFee;
-    emit ChangedPublicationFee(publicationFeeInWei);
-  }
+    function setPublicationFee(uint256 _publicationFee) external onlyOwner {
+        publicationFeeInWei = _publicationFee;
+        emit ChangedPublicationFee(publicationFeeInWei);
+    }
 
-  /**
-    * @dev Sets the share cut for the owner of the contract that's
+    /**
+      * @dev Sets the share cut for the owner of the contract that's
     *  charged to the seller on a successful sale
     * @param _tradeFee - Share amount, from 0 to 999,999
     */
-  function settradeFee(uint256 _tradeFee) public onlyOwner {
-    require(_tradeFee < 10000, "The owner cut should be between 0 and 10000");
+    function settradeFee(uint256 _tradeFee) public onlyOwner {
+        require(_tradeFee < 10000, "The owner cut should be between 0 and 10000");
 
-    tradeFee = _tradeFee;
-    emit ChangedTradeFee(tradeFee);
-  }
+        tradeFee = _tradeFee;
+        emit ChangedTradeFee(tradeFee);
+    }
 
-  /**
-    * @dev Creates a new order
-    * @param nftAddress - Non fungible registry address
+    /**
+      * @dev Creates a new order
     * @param assetId - ID of the published NFT
     * @param priceInWei - Price in Wei for the supported coin
     * @param expiresAt - Duration of the order (in hours)
     */
-  function createOrder(
-    uint256 assetId,
-    uint256 priceInWei,
-    uint256 expiresAt
-  )
+    function createOrder(
+        uint256 assetId,
+        uint256 priceInWei,
+        uint256 expiresAt
+    )
     public
     whenNotPaused
-  {
-    _createOrder(
-      assetId,
-      priceInWei,
-      expiresAt
-    );
-  }
+    {
+        _createOrder(
+            assetId,
+            priceInWei,
+            expiresAt
+        );
+    }
 
-  /**
-    * @dev Cancel an already published order
+    /**
+      * @dev Cancel an already published order
     *  can only be canceled by seller or the contract owner
-    * @param nftAddress - Address of the NFT registry
     * @param assetId - ID of the published NFT
     */
-  function cancelOrder(uint256 assetId) public whenNotPaused {
-    _cancelOrder(assetId);
-  }
+    function cancelOrder(uint256 assetId) public whenNotPaused {
+        _cancelOrder(assetId);
+    }
 
-  /**
-    * @dev Executes the sale for a published NFT and checks for the asset fingerprint
-    * @param nftAddress - Address of the NFT registry
+    /**
+      * @dev Executes the sale for a published NFT and checks for the asset fingerprint
     * @param assetId - ID of the published NFT
     * @param price - Order price
     * @param fingerprint - Verification info for the asset
     */
-  function safeExecuteOrder(
-    uint256 assetId,
-    uint256 price,
-    bytes memory fingerprint
-  )
-   public
-   whenNotPaused
-  {
-    _executeOrder(
-      assetId,
-      price,
-      fingerprint
-    );
-  }
+    function safeExecuteOrder(
+        uint256 assetId,
+        uint256 price,
+        bytes memory fingerprint
+    )
+    public
+    whenNotPaused
+    {
+        _executeOrder(
+            assetId,
+            price,
+            fingerprint
+        );
+    }
 
-  /**
-    * @dev Executes the sale for a published NFT
-    * @param nftAddress - Address of the NFT registry
+    /**
+      * @dev Executes the sale for a published NFT
     * @param assetId - ID of the published NFT
     * @param price - Order price
     */
-  function executeOrder(
-    uint256 assetId,
-    uint256 price
-  )
-   public 
-   whenNotPaused
-  {
-    _executeOrder(
-      assetId,
-      price,
-      ""
-    );
-  }
+    function executeOrder(
+        uint256 assetId,
+        uint256 price
+    )
+    public
+    whenNotPaused
+    {
+        _executeOrder(
+            assetId,
+            price,
+            ""
+        );
+    }
 
-  /**
-    * @dev Creates a new order
-    * @param nftAddress - Non fungible registry address
+    /**
+      * @dev Creates a new order
     * @param assetId - ID of the published NFT
     * @param priceInWei - Price in Wei for the supported coin
     * @param expiresAt - Duration of the order (in hours)
     */
-  function _createOrder(
-    uint256 assetId,
-    uint256 priceInWei,
-    uint256 expiresAt
-  )
+    function _createOrder(
+        uint256 assetId,
+        uint256 priceInWei,
+        uint256 expiresAt
+    )
     internal
-  {
-    address sender = _msgSender();
+    {
+        address sender = _msgSender();
 
-    ERC721Interface nftRegistry = ERC721Interface(nftAddress);
-    address assetOwner = nftRegistry.ownerOf(assetId);
+        ERC721Interface nftRegistry = ERC721Interface(nftAddress);
+        address assetOwner = nftRegistry.ownerOf(assetId);
 
-    require(sender == assetOwner, "_createOrder::Only the owner can create orders");
-    require(
-      nftRegistry.getApproved(assetId) == address(this) || nftRegistry.isApprovedForAll(assetOwner, address(this)),
-      "_createOrder::The contract is not authorized to manage the asset"
-    );
-    require(priceInWei > 0, "Price should be bigger than 0");
-    require(expiresAt > block.timestamp.add(1 minutes), "_createOrder::Publication should be more than 1 minute in the future");
+        require(sender == assetOwner, "_createOrder::Only the owner can create orders");
+        require(
+            nftRegistry.getApproved(assetId) == address(this) || nftRegistry.isApprovedForAll(assetOwner, address(this)),
+            "_createOrder::The contract is not authorized to manage the asset"
+        );
+        require(priceInWei > 0, "Price should be bigger than 0");
+        require(expiresAt > block.timestamp.add(1 minutes), "_createOrder::Publication should be more than 1 minute in the future");
 
-    bytes32 orderId = keccak256(
-      abi.encodePacked(
-        block.timestamp,
-        assetOwner,
-        assetId,
-        nftAddress,
-        priceInWei
-      )
-    );
+        bytes32 orderId = keccak256(
+            abi.encodePacked(
+                block.timestamp,
+                assetOwner,
+                assetId,
+                nftAddress,
+                priceInWei
+            )
+        );
 
-    orderByAssetId[nftAddress][assetId] = Order({
-      id: orderId,
-      seller: assetOwner,
-      nftAddress: nftAddress,
-      price: priceInWei,
-      expiresAt: expiresAt
-    });
+        orderByAssetId[nftAddress][assetId] = Order({
+        id: orderId,
+        seller: assetOwner,
+        nftAddress: nftAddress,
+        price: priceInWei,
+        expiresAt: expiresAt
+        });
 
-    // Check if there's a publication fee and
-    // transfer the amount to marketplace owner
-    if (publicationFeeInWei > 0) {
-      require(
-        hccToken.transferFrom(sender, teamAddress, publicationFeeInWei),
-        "_createOrder::Transfering the publication fee to the Marketplace owner failed"
-      );
+        // Check if there's a publication fee and
+        // transfer the amount to marketplace owner
+        if (publicationFeeInWei > 0) {
+            require(
+                hccToken.transferFrom(sender, teamAddress, publicationFeeInWei),
+                "_createOrder::Transfering the publication fee to the Marketplace owner failed"
+            );
+        }
+
+        emit OrderCreated(
+            orderId,
+            assetId,
+            assetOwner,
+            nftAddress,
+            priceInWei,
+            expiresAt
+        );
     }
 
-    emit OrderCreated(
-      orderId,
-      assetId,
-      assetOwner,
-      nftAddress,
-      priceInWei,
-      expiresAt
-    );
-  }
-
-  /**
-    * @dev Cancel an already published order
+    /**
+      * @dev Cancel an already published order
     *  can only be canceled by seller or the contract owner
-    * @param nftAddress - Address of the NFT registry
     * @param assetId - ID of the published NFT
     */
-  function _cancelOrder(uint256 assetId) internal returns (Order memory) {
-    address sender = _msgSender();
-    Order memory order = orderByAssetId[nftAddress][assetId];
+    function _cancelOrder(uint256 assetId) internal returns (Order memory) {
+        address sender = _msgSender();
+        Order memory order = orderByAssetId[nftAddress][assetId];
 
-    require(order.id != 0, "Asset not published");
-    require(order.seller == sender || sender == owner(), "Unauthorized user");
+        require(order.id != 0, "Asset not published");
+        require(order.seller == sender || sender == owner(), "Unauthorized user");
 
-    bytes32 orderId = order.id;
-    address orderSeller = order.seller;
-    address orderNftAddress = order.nftAddress;
-    delete orderByAssetId[nftAddress][assetId];
+        bytes32 orderId = order.id;
+        address orderSeller = order.seller;
+        address orderNftAddress = order.nftAddress;
+        delete orderByAssetId[nftAddress][assetId];
 
-    emit OrderCancelled(
-      orderId,
-      assetId,
-      orderSeller,
-      orderNftAddress
-    );
+        emit OrderCancelled(
+            orderId,
+            assetId,
+            orderSeller,
+            orderNftAddress
+        );
 
-    return order;
-  }
+        return order;
+    }
 
-  /**
-    * @dev Executes the sale for a published NFT
-    * @param nftAddress - Address of the NFT registry
+    /**
+      * @dev Executes the sale for a published NFT
     * @param assetId - ID of the published NFT
     * @param price - Order price
     * @param fingerprint - Verification info for the asset
     */
-  function _executeOrder(
-    uint256 assetId,
-    uint256 price,
-    bytes memory fingerprint
-  )
-   internal returns (Order memory)
-  {
-    address _nftAddress = nftAddress;
-    uint256 _price = price;
-    uint256 _assetId = assetId;
+    function _executeOrder(
+        uint256 assetId,
+        uint256 price,
+        bytes memory fingerprint
+    )
+    internal returns (Order memory)
+    {
+        address _nftAddress = nftAddress;
+        uint256 _price = price;
+        uint256 _assetId = assetId;
 
-    address sender = _msgSender();
+        address sender = _msgSender();
 
-    ERC721Verifiable nftRegistry = ERC721Verifiable(_nftAddress);
+        ERC721Verifiable nftRegistry = ERC721Verifiable(_nftAddress);
 
-    if (nftRegistry.supportsInterface(InterfaceId_ValidateFingerprint)) {
-      require(
-        nftRegistry.verifyFingerprint(_assetId, fingerprint),
-        "The asset fingerprint is not valid"
-      );
+        if (nftRegistry.supportsInterface(InterfaceId_ValidateFingerprint)) {
+            require(
+                nftRegistry.verifyFingerprint(_assetId, fingerprint),
+                "The asset fingerprint is not valid"
+            );
+        }
+        Order memory order = orderByAssetId[_nftAddress][_assetId];
+
+        require(order.id != 0, "Asset not published");
+
+        address seller = order.seller;
+
+        require(seller != address(0), "Invalid address");
+        require(seller != sender, "Unauthorized user");
+        require(order.price == _price, "The price is not correct");
+        require(block.timestamp < order.expiresAt, "The order expired");
+        require(seller == nftRegistry.ownerOf(_assetId), "The seller is no longer the owner");
+
+        bytes32 orderId = order.id;
+        delete orderByAssetId[_nftAddress][_assetId];
+
+        _transferMoney(_price, seller, sender);
+
+        // Transfer asset owner
+        nftRegistry.safeTransferFrom(
+            seller,
+            sender,
+            _assetId
+        );
+
+        emit OrderSuccessful(
+            orderId,
+            _assetId,
+            seller,
+            _nftAddress,
+            _price,
+            sender
+        );
+
+        return order;
     }
-    Order memory order = orderByAssetId[_nftAddress][_assetId];
 
-    require(order.id != 0, "Asset not published");
+    function _transferMoney(
+        uint256 price,
+        address seller,
+        address sender
+    ) internal
+    {
+        uint256 fee = _calculateFee(price);
+        // Transfer fee amount for marketplace Owner
+        require(
+            hccToken.transferFrom(sender, teamAddress, fee),
+            "_transferMoney::Transfering the cut to the Marketplace owner failed"
+        );
 
-    address seller = order.seller;
+        // Transfer sale amount to seller
+        require(
+            hccToken.transferFrom(sender, seller, price.sub(fee)),
+            "_transferMoney::Transfering the sale amount to the seller failed"
+        );
+    }
 
-    require(seller != address(0), "Invalid address");
-    require(seller != sender, "Unauthorized user");
-    require(order.price == _price, "The price is not correct");
-    require(block.timestamp < order.expiresAt, "The order expired");
-    require(seller == nftRegistry.ownerOf(_assetId), "The seller is no longer the owner");
-
-    bytes32 orderId = order.id;
-    delete orderByAssetId[_nftAddress][_assetId];
-
-    _transferMoney(_price, seller, sender);
-
-    // Transfer asset owner
-    nftRegistry.safeTransferFrom(
-      seller,
-      sender,
-      _assetId
-    );
-
-    emit OrderSuccessful(
-      orderId,
-      _assetId,
-      seller,
-      _nftAddress,
-      _price,
-      sender
-    );
-
-    return order;
-  }
-
-  function _transferMoney(
-    uint256 price,
-    address seller,
-    address sender
-  ) internal 
-  {    
-    uint256 fee = _calculateFee(price);
-      // Transfer fee amount for marketplace Owner
-    require(
-    hccToken.transferFrom(sender, teamAddress, fee),
-    "_transferMoney::Transfering the cut to the Marketplace owner failed"
-    );
-
-    // Transfer sale amount to seller
-    require(
-    hccToken.transferFrom(sender, seller, price.sub(fee)),
-    "_transferMoney::Transfering the sale amount to the seller failed"
-    );
-  }
-
-  /**
-    * @dev Calculate fee
+    /**
+      * @dev Calculate fee
     * - internal view function, called inside buy(), exchange() function
     * @param price The price of transaction
     */
-  function _calculateFee(uint256 price) internal view returns (uint256 fee) {
+    function _calculateFee(uint256 price) internal view returns (uint256 fee) {
         fee = price.mul(tradeFee).div(1000000);
-  }
+    }
 
 }

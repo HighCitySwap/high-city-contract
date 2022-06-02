@@ -18,11 +18,11 @@ library SafeMath {
      * _Available since v3.4._
      */
     function tryAdd(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-        unchecked {
-            uint256 c = a + b;
-            if (c < a) return (false, 0);
-            return (true, c);
-        }
+    unchecked {
+        uint256 c = a + b;
+        if (c < a) return (false, 0);
+        return (true, c);
+    }
     }
 
     /**
@@ -31,10 +31,10 @@ library SafeMath {
      * _Available since v3.4._
      */
     function trySub(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-        unchecked {
-            if (b > a) return (false, 0);
-            return (true, a - b);
-        }
+    unchecked {
+        if (b > a) return (false, 0);
+        return (true, a - b);
+    }
     }
 
     /**
@@ -43,15 +43,15 @@ library SafeMath {
      * _Available since v3.4._
      */
     function tryMul(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-        unchecked {
-            // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
-            // benefit is lost if 'b' is also tested.
-            // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
-            if (a == 0) return (true, 0);
-            uint256 c = a * b;
-            if (c / a != b) return (false, 0);
-            return (true, c);
-        }
+    unchecked {
+        // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
+        // benefit is lost if 'b' is also tested.
+        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
+        if (a == 0) return (true, 0);
+        uint256 c = a * b;
+        if (c / a != b) return (false, 0);
+        return (true, c);
+    }
     }
 
     /**
@@ -60,10 +60,10 @@ library SafeMath {
      * _Available since v3.4._
      */
     function tryDiv(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-        unchecked {
-            if (b == 0) return (false, 0);
-            return (true, a / b);
-        }
+    unchecked {
+        if (b == 0) return (false, 0);
+        return (true, a / b);
+    }
     }
 
     /**
@@ -72,10 +72,10 @@ library SafeMath {
      * _Available since v3.4._
      */
     function tryMod(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-        unchecked {
-            if (b == 0) return (false, 0);
-            return (true, a % b);
-        }
+    unchecked {
+        if (b == 0) return (false, 0);
+        return (true, a % b);
+    }
     }
 
     /**
@@ -168,10 +168,10 @@ library SafeMath {
         uint256 b,
         string memory errorMessage
     ) internal pure returns (uint256) {
-        unchecked {
-            require(b <= a, errorMessage);
-            return a - b;
-        }
+    unchecked {
+        require(b <= a, errorMessage);
+        return a - b;
+    }
     }
 
     /**
@@ -191,10 +191,10 @@ library SafeMath {
         uint256 b,
         string memory errorMessage
     ) internal pure returns (uint256) {
-        unchecked {
-            require(b > 0, errorMessage);
-            return a / b;
-        }
+    unchecked {
+        require(b > 0, errorMessage);
+        return a / b;
+    }
     }
 
     /**
@@ -217,10 +217,10 @@ library SafeMath {
         uint256 b,
         string memory errorMessage
     ) internal pure returns (uint256) {
-        unchecked {
-            require(b > 0, errorMessage);
-            return a % b;
-        }
+    unchecked {
+        require(b > 0, errorMessage);
+        return a % b;
+    }
     }
 }
 
@@ -794,17 +794,17 @@ library Counters {
     }
 
     function increment(Counter storage counter) internal {
-        unchecked {
-            counter._value += 1;
-        }
+    unchecked {
+        counter._value += 1;
+    }
     }
 
     function decrement(Counter storage counter) internal {
         uint256 value = counter._value;
         require(value > 0, "Counter: decrement overflow");
-        unchecked {
-            counter._value = value - 1;
-        }
+    unchecked {
+        counter._value = value - 1;
+    }
     }
 
     function reset(Counter storage counter) internal {
@@ -1777,13 +1777,12 @@ contract HCCGiftNft is ERC721Enumerable, Ownable {
     event CreateNft(address indexed owner, uint256 indexed id, uint256 indexed code);
     constructor(
         address _hccAddress,
-        address _otherPaymentAddress,
-        uint256 _hccPirce,
-        uint256 _otherPaymentPirce
+        address _otherPaymentAddress
     ) ERC721("HCCGift NFT", "HCCG NFT"){
         require(_hccAddress != address(0), "HCC address cannot be 0");
         require(_otherPaymentAddress != address(0), "Other payment address cannot be 0");
         hccAddress = _hccAddress;
+        otherPaymentAddress = _otherPaymentAddress;
     }
 
     modifier nftIsOpen {
@@ -1833,7 +1832,7 @@ contract HCCGiftNft is ERC721Enumerable, Ownable {
         require(_codeMap[code] == false, "code already exists");
         require(!to.isContract(), "The address of to cannot be a contract address");
         require(rawOwnerOf(_tokensId) == address(0) && _tokensId > 0, "Token already minted");
-        _codeMap[code] = true; 
+        _codeMap[code] = true;
         _userPowerMap[to] = _userPowerMap[msg.sender].add(1);
         _mintAnNFT(to, _tokensId, code);
         notifyPowerChange(msg.sender);
@@ -1897,8 +1896,8 @@ contract HCCGiftNft is ERC721Enumerable, Ownable {
         }
     }
 
-  /**
-     * @dev See {IERC721-safeTransferFrom}.
+    /**
+       * @dev See {IERC721-safeTransferFrom}.
      */
     function safeTransferFrom(
         address from,
@@ -1928,8 +1927,8 @@ contract HCCGiftNft is ERC721Enumerable, Ownable {
         notifyPowerChange(msg.sender);
     }
 
-   /**
-     * @dev See {IERC721-transferFrom}.
+    /**
+      * @dev See {IERC721-transferFrom}.
      */
     function transferFrom(
         address from,

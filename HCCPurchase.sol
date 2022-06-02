@@ -1097,7 +1097,7 @@ contract HCCPurchase is Ownable {
 
         PurchaseInfo storage info = purchaseInfo[round];
         require(info.beginTime > block.timestamp || (info.endTime > block.timestamp && endTime < block.timestamp), "setRound: round has begin, forbidden update.");
-        require(info.total == 0, "setRound: round don't exist.");
+        require(info.total != 0, "setRound: round don't exist.");
         info.total = total;
         info.token = token;
         info.price = price;

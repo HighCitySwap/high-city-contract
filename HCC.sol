@@ -1028,7 +1028,7 @@ contract HCCToken is ERC20, Ownable {
         address BODRewardPool,
         address stakeRewardPool,
         uint256 fee
-    ) ERC20("High City Coin", "HCC"){
+    ) ERC20("Hi City Coin", "HCC"){
         _mint(msg.sender, preMineSupply);
         _teamRewardAdderss = teamRewardAdderss;
         _nftOwnerRewardPool = nftOwnerRewardPool;
