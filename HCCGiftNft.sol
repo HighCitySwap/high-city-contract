@@ -1774,7 +1774,7 @@ contract HCCGiftNft is ERC721Enumerable, Ownable {
     event HccPriceChange(uint256 newHccPrice);
     event OtherPaymentPirceChange(uint256 newOtherPaymentPirce);
     event NftHolderPoolChange(address newNftHolderPool);
-    event CreateNft(address indexed owner, uint256 indexed id, uint256 indexed code);
+    event CreateNft(address indexed owner, uint256 indexed id, uint256 indexed code, uint256 indexed timestamp);
     constructor(
         address _hccAddress,
         address _otherPaymentAddress
@@ -1834,41 +1834,48 @@ contract HCCGiftNft is ERC721Enumerable, Ownable {
         require(rawOwnerOf(_tokensId) == address(0) && _tokensId > 0, "Token already minted");
         _codeMap[code] = true;
         _userPowerMap[to] = _userPowerMap[msg.sender].add(1);
-        _mintAnNFT(to, _tokensId, code);
+        _mintAnNFT(to, _tokensId, code, block.timestamp);
         notifyPowerChange(msg.sender);
     }
 
-    function mint(address to, uint256 hccPirce, uint256 otherPaymentPirce, uint256 _timestamp, uint256 code, bytes memory _signature) public nftIsOpen{
+    function mint(address to, uint256 num,uint256 hccPirce, uint256 otherPaymentPirce, uint256 _timestamp, uint256 code, bytes memory _signature) public nftIsOpen{
         require(!msg.sender.isContract(), "The address of to cannot be a contract address");
         require(to == msg.sender, "The address of to cannot be the address of the caller");
-        uint256 _tokensId = getNextTokenID();
+        require(num == 0, "The num can't be zero");
+
         address signerOwner = signatureMint(to, hccPirce, otherPaymentPirce, _timestamp, code,_signature);
         require(signerOwner == executorAddress, "signer is not the executor");
-        require(rawOwnerOf(_tokensId) == address(0) && _tokensId > 0, "Token already minted");
+
         if (hccPirce > 0){
             SafeERC20.safeTransferFrom(IERC20(hccAddress), msg.sender, address(this), hccPirce);
         }
         if (otherPaymentPirce > 0){
             SafeERC20.safeTransferFrom(IERC20(otherPaymentAddress), msg.sender, address(this), otherPaymentPirce);
         }
-        _userPowerMap[msg.sender] = _userPowerMap[msg.sender].add(1);
-        _mintAnNFT(msg.sender, _tokensId, code);
+
+        for (uint256 i = 0; i < num; i++){
+            uint256 _tokensId = getNextTokenID();
+            require(rawOwnerOf(_tokensId) == address(0) && _tokensId > 0, "Token already minted");
+            _userPowerMap[msg.sender] = _userPowerMap[msg.sender].add(1);
+            _mintAnNFT(msg.sender, _tokensId, code, block.timestamp);
+        }
+
         notifyPowerChange(msg.sender);
     }
 
     function signatureWallet(address wallet, uint256 code, uint256 _timestamp, bytes memory _signature) public pure returns (address){
         return ECDSA.recover(keccak256(abi.encode(wallet, code, _timestamp)), _signature);
     }
-    function signatureMint(address to, uint256 hccPirce, uint256 otherPaymentPirce, uint256 _timestamp, uint256 code, bytes memory _signature) public pure returns (address){
-        return ECDSA.recover(keccak256(abi.encode(to, hccPirce, otherPaymentPirce, _timestamp, code)), _signature);
+    function signatureMint(address to, uint256 num, uint256 hccPirce, uint256 otherPaymentPirce, uint256 _timestamp, uint256 code, bytes memory _signature) public pure returns (address){
+        return ECDSA.recover(keccak256(abi.encode(to, num, hccPirce, otherPaymentPirce, _timestamp, code)), _signature);
     }
 
 
-    function _mintAnNFT(address _to, uint256 _tokenId, uint256 code) private {
+    function _mintAnNFT(address _to, uint256 _tokenId, uint256 code, uint256 timestamp) private {
 
         _tokenIdTracker.increment();
         _safeMint(_to, _tokenId);
-        emit CreateNft(_to, _tokenId,code);
+        emit CreateNft(_to, _tokenId,code, timestamp);
     }
 
     function walletOfOwner(address _owner) external view returns (uint256[] memory) {
