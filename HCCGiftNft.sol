@@ -1774,7 +1774,7 @@ contract HCCGiftNft is ERC721Enumerable, Ownable {
     event HccPriceChange(uint256 newHccPrice);
     event OtherPaymentPirceChange(uint256 newOtherPaymentPirce);
     event NftHolderPoolChange(address newNftHolderPool);
-    event CreateNft(address indexed owner, uint256 indexed id, uint256 indexed code, uint256 indexed timestamp);
+    event CreateNft(address indexed owner, uint256 indexed id, uint256 indexed code, uint256 timestamp);
     constructor(
         address _hccAddress,
         address _otherPaymentAddress
@@ -1843,7 +1843,7 @@ contract HCCGiftNft is ERC721Enumerable, Ownable {
         require(to == msg.sender, "The address of to cannot be the address of the caller");
         require(num == 0, "The num can't be zero");
 
-        address signerOwner = signatureMint(to, hccPirce, otherPaymentPirce, _timestamp, code,_signature);
+        address signerOwner = signatureMint(to, num, hccPirce, otherPaymentPirce, _timestamp, code,_signature);
         require(signerOwner == executorAddress, "signer is not the executor");
 
         if (hccPirce > 0){
