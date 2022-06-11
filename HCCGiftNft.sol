@@ -1774,7 +1774,7 @@ contract HCCGiftNft is ERC721Enumerable, Ownable {
     event HccPriceChange(uint256 newHccPrice);
     event OtherPaymentPirceChange(uint256 newOtherPaymentPirce);
     event NftHolderPoolChange(address newNftHolderPool);
-    event CreateNft(address indexed owner, uint256 indexed id, uint256 indexed code, uint256 timestamp);
+    event CreateNft(address indexed owner, uint256 indexed id, uint256 indexed code, uint256 tpe, uint256 timestamp);
     constructor(
         address _hccAddress,
         address _otherPaymentAddress
@@ -1825,7 +1825,7 @@ contract HCCGiftNft is ERC721Enumerable, Ownable {
         return _lastTokenID;
     }
 
-    function adminMint(address to, uint256 _timestamp, uint256 code, bytes memory _signature) public nftIsOpen{
+    function adminMint(address to, uint256 _timestamp, uint256 code, uint256 tpe, bytes memory _signature) public nftIsOpen{
         uint256 _tokensId = getNextTokenID();
         address signerOwner = signatureWallet(to, code,_timestamp,_signature);
         require(signerOwner == executorAddress, "signer is not the executor");
@@ -1834,11 +1834,11 @@ contract HCCGiftNft is ERC721Enumerable, Ownable {
         require(rawOwnerOf(_tokensId) == address(0) && _tokensId > 0, "Token already minted");
         _codeMap[code] = true;
         _userPowerMap[to] = _userPowerMap[msg.sender].add(1);
-        _mintAnNFT(to, _tokensId, code, block.timestamp);
+        _mintAnNFT(to, _tokensId, code, tpe, block.timestamp);
         notifyPowerChange(msg.sender);
     }
 
-    function mint(address to, uint256 num,uint256 hccPirce, uint256 otherPaymentPirce, uint256 _timestamp, uint256 code, bytes memory _signature) public nftIsOpen{
+    function mint(address to, uint256 num,uint256 hccPirce, uint256 otherPaymentPirce, uint256 _timestamp, uint256 code, uint256 tpe, bytes memory _signature) public nftIsOpen{
         require(!msg.sender.isContract(), "The address of to cannot be a contract address");
         require(to == msg.sender, "The address of to cannot be the address of the caller");
         require(num == 0, "The num can't be zero");
@@ -1857,7 +1857,7 @@ contract HCCGiftNft is ERC721Enumerable, Ownable {
             uint256 _tokensId = getNextTokenID();
             require(rawOwnerOf(_tokensId) == address(0) && _tokensId > 0, "Token already minted");
             _userPowerMap[msg.sender] = _userPowerMap[msg.sender].add(1);
-            _mintAnNFT(msg.sender, _tokensId, code, block.timestamp);
+            _mintAnNFT(msg.sender, _tokensId, code, tpe, block.timestamp);
         }
 
         notifyPowerChange(msg.sender);
@@ -1871,11 +1871,11 @@ contract HCCGiftNft is ERC721Enumerable, Ownable {
     }
 
 
-    function _mintAnNFT(address _to, uint256 _tokenId, uint256 code, uint256 timestamp) private {
+    function _mintAnNFT(address _to, uint256 _tokenId, uint256 code, uint256 tpe, uint256 timestamp) private {
 
         _tokenIdTracker.increment();
         _safeMint(_to, _tokenId);
-        emit CreateNft(_to, _tokenId,code, timestamp);
+        emit CreateNft(_to, _tokenId,code, tpe, timestamp);
     }
 
     function walletOfOwner(address _owner) external view returns (uint256[] memory) {
