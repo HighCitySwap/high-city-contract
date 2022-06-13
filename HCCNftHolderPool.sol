@@ -956,12 +956,14 @@ contract HCCNFTHolderPool is Ownable {
     struct UserInfo {
         uint256 amount;     // How many LP tBscens the user has provided.
         uint256 rewardDebt; // Reward debt.
+        uint256 receiveReward; // reward received
     }
 
     // Info of each pool.
     struct PoolInfo {
         uint256 accHCCPerShare; // Accumulated HCCs per share, times 1e12.
         uint256 totalAmount;    // Total amount of current pool deposit.
+        uint256 totalReward;    // reward received of pool.
     }
 
     // The HCC TBscen!
@@ -991,7 +993,8 @@ contract HCCNFTHolderPool is Ownable {
         HCCNFTReawardPool = _HCCNFTReawardPool;
         _poolInfo = PoolInfo({
         accHCCPerShare : 0,
-        totalAmount : 0
+        totalAmount : 0,
+        totalReward : 0
         });
 
     }
@@ -1019,6 +1022,7 @@ contract HCCNFTHolderPool is Ownable {
         bool minRet = HCC.transferFrom(HCCNFTReawardPool, address(this), poolReward);
         if (minRet) {
             pool.accHCCPerShare = pool.accHCCPerShare.add(poolReward.mul(1e12).div(pool.totalAmount));
+            pool.totalReward = pool.totalReward.add(poolReward);
         }
     }
 
@@ -1042,6 +1046,7 @@ contract HCCNFTHolderPool is Ownable {
             uint256 pendingAmount = user.amount.mul(pool.accHCCPerShare).div(1e12).sub(user.rewardDebt);
             if (pendingAmount > 0) {
                 safeHCCTransfer(_user, pendingAmount);
+                user.receiveReward = user.receiveReward.add(pendingAmount);
             }
         }
         uint256 oldValue = user.amount;
@@ -1061,6 +1066,7 @@ contract HCCNFTHolderPool is Ownable {
         uint256 pendingAmount = user.amount.mul(pool.accHCCPerShare).div(1e12).sub(user.rewardDebt);
         if (pendingAmount > 0) {
             safeHCCTransfer(_user, pendingAmount);
+            user.receiveReward = user.receiveReward.add(pendingAmount);
         }
         user.rewardDebt = user.amount.mul(pool.accHCCPerShare).div(1e12);
         emit Withdraw(_user, pendingAmount);
