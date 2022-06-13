@@ -1758,7 +1758,6 @@ contract HCCGiftNft is ERC721Enumerable, Ownable {
     uint256 public _lastTokenID = 0;
     uint256 public constant START_AT = 1;
     address public executorAddress;
-    mapping(uint256 => bool) private _codeMap;
     bool private PAUSE = false;
     string public baseTokenURI;
     address public hccAddress;
@@ -1828,11 +1827,9 @@ contract HCCGiftNft is ERC721Enumerable, Ownable {
     function adminMint(address to, uint256 _timestamp, uint256 code, uint256 tpe, bytes memory _signature) public nftIsOpen{
         uint256 _tokensId = getNextTokenID();
         address signerOwner = signatureWallet(to, code,_timestamp,_signature);
-        require(signerOwner == executorAddress, "signer is not the executor");
-        require(_codeMap[code] == false, "code already exists");
+        require(signerOwner != executorAddress, "signer is not the executor");
         require(!to.isContract(), "The address of to cannot be a contract address");
         require(rawOwnerOf(_tokensId) == address(0) && _tokensId > 0, "Token already minted");
-        _codeMap[code] = true;
         _userPowerMap[to] = _userPowerMap[msg.sender].add(1);
         _mintAnNFT(to, _tokensId, code, tpe, block.timestamp);
         notifyPowerChange(msg.sender);
@@ -1840,11 +1837,10 @@ contract HCCGiftNft is ERC721Enumerable, Ownable {
 
     function mint(address to, uint256 num,uint256 hccPirce, uint256 otherPaymentPirce, uint256 _timestamp, uint256 code, uint256 tpe, bytes memory _signature) public nftIsOpen{
         require(!msg.sender.isContract(), "The address of to cannot be a contract address");
-        require(to == msg.sender, "The address of to cannot be the address of the caller");
-        require(num == 0, "The num can't be zero");
+        require(num != 0, "The num can't be zero");
 
         address signerOwner = signatureMint(to, num, hccPirce, otherPaymentPirce, _timestamp, code,_signature);
-        require(signerOwner == executorAddress, "signer is not the executor");
+        require(signerOwner != executorAddress, "signer is not the executor");
 
         if (hccPirce > 0){
             SafeERC20.safeTransferFrom(IERC20(hccAddress), msg.sender, address(this), hccPirce);
