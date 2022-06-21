@@ -1765,6 +1765,7 @@ contract HCCLeaderNft is ERC721Enumerable, Ownable {
     event HccPriceChange(uint256 newHccPrice);
     event OtherPaymentPirceChange(uint256 newOtherPaymentPirce);
     event CreateNft(address indexed owner, uint256 indexed id, uint256 indexed code);
+    event LeaderNftPurchase(address indexed owner, uint256 indexed id, uint256 indexed code, uint256 hccPirce, uint256 otherPaymentPirce);
     constructor(
         address _hccAddress,
         address _otherPaymentAddress
@@ -1818,7 +1819,7 @@ contract HCCLeaderNft is ERC721Enumerable, Ownable {
         require(_codeMap[code] == false, "code already exists");
         require(!to.isContract(), "The address of to cannot be a contract address");
         require(rawOwnerOf(_tokensId) == address(0) && _tokensId > 0, "Token already minted");
-        _codeMap[code] = true; 
+        _codeMap[code] = true;
         _mintAnNFT(to, _tokensId, code);
     }
 
@@ -1836,13 +1837,14 @@ contract HCCLeaderNft is ERC721Enumerable, Ownable {
             SafeERC20.safeTransferFrom(IERC20(otherPaymentAddress), msg.sender, address(this), otherPaymentPirce);
         }
         _mintAnNFT(msg.sender, _tokensId, code);
+        emit LeaderNftPurchase(msg.sender, _tokensId, code, hccPirce, otherPaymentPirce);
     }
 
     function signatureWallet(address wallet, uint256 code, uint256 _timestamp, bytes memory _signature) public pure returns (address){
         return ECDSA.recover(keccak256(abi.encode(wallet, code, _timestamp)), _signature);
     }
 
-    
+
     function signatureMint(address to, uint256 hccPirce, uint256 otherPaymentPirce, uint256 _timestamp, uint256 code, bytes memory _signature) public pure returns (address){
         return ECDSA.recover(keccak256(abi.encode(to, hccPirce, otherPaymentPirce, _timestamp, code)), _signature);
     }

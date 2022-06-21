@@ -1777,7 +1777,7 @@ contract HCCGiftNft is ERC721Enumerable, Ownable {
     constructor(
         address _hccAddress,
         address _otherPaymentAddress
-    ) ERC721("HCCLeader NFT", "HCCL NFT"){
+    ) ERC721("HCCGift NFT", "HCCG NFT"){
         require(_hccAddress != address(0), "HCC address cannot be 0");
         require(_otherPaymentAddress != address(0), "Other payment address cannot be 0");
         hccAddress = _hccAddress;
