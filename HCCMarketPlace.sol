@@ -1282,7 +1282,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
         // return bidder
         AuctionOrder memory oldOrder = auctionOrderMap[assetId];
         if(oldOrder.id != 0 && oldOrder.bidder !=address(0) ){
-            _returnBidder(oldOrder.bidder, oldOrder.bid);
+            _returnBidder(oldOrder.id, oldOrder.bidder, oldOrder.bid);
         }
 
         bytes32 orderId = keccak256(
@@ -1296,10 +1296,12 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
         );
 
         auctionOrderMap[assetId] = AuctionOrder({
-        id : orderId,
-        seller : assetOwner,
-        price : priceInWei,
-        expiresAt: expiresAt
+            id : orderId,
+            seller : assetOwner,
+            price : priceInWei,
+            bidder : address(0),
+            bid : 0,
+            expiresAt: expiresAt
         });
 
         // Check if there's a publication fee and
@@ -1427,12 +1429,6 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
 
         ERC721Verifiable nftRegistry = ERC721Verifiable(_nftAddress);
 
-        if (nftRegistry.supportsInterface(InterfaceId_ValidateFingerprint)) {
-            require(
-                nftRegistry.verifyFingerprint(_assetId, fingerprint),
-                "The asset fingerprint is not valid"
-            );
-        }
         AuctionOrder memory order = auctionOrderMap[_assetId];
         bytes32 orderId = order.id;
 
@@ -1449,7 +1445,8 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
         if(seller != nftRegistry.ownerOf(_assetId)){
             _returnBidder(orderId, order.bidder, order.bid);
             delete auctionOrderMap[assetId];
-            return order;
+            revert("Bid failed because nft owner change!");
+            return;
         }
 
         address oldBidder = order.bidder;
@@ -1480,8 +1477,9 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
         address sender
     ) internal
     {
+        uint256 fee = 0;
         if(tradeFee>0){
-            uint256 fee = _calculateFee(price);
+            fee = _calculateFee(price);
             // Transfer fee amount for marketplace Owner
             require(
                 hccToken.transferFrom(sender, teamAddress, fee),
