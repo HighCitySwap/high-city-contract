@@ -1145,7 +1145,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
 
         // if order type is auction,return bid to bidder
         if(order.tpe == ORDER_TYPE_AUCTION && orderBidder!=address(0)){
-            _returnBidder(orderId,orderBidder,bid);
+            _returnBidder(orderBidder, bid);
         }
 
         // Return from contract
@@ -1276,7 +1276,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
             hccToken.transferFrom(sender, address(this), bid),
             "_bidAuctionOrder::Transfer of bid failed"
         );
-        _returnBidder(orderId, oldBidder, oldBid);
+        _returnBidder(oldBidder, oldBid);
         emit OrderBidSuccess(
             orderId,
             _assetId,
@@ -1309,11 +1309,10 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
 
     /**
     * @dev Order Cancellation Return to Bidder
-    * @param orderId - ID of the published Order
     * @param bidder - address bidder
     * @param bid - latest price
     */
-    function _returnBidder(bytes32 orderId, address bidder, uint256 bid) internal {
+    function _returnBidder(address bidder, uint256 bid) internal {
         require(
             hccToken.transferFrom(address(this), bidder, bid),
             "_returnBidder::return bidder failed"
