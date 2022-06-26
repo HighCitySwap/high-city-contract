@@ -822,6 +822,7 @@ contract MarketplaceStorage {
 
     // EVENTS
     event OrderCreated(
+        uint256 tpe,
         bytes32 id,
         uint256 indexed assetId,
         address indexed seller,
@@ -833,7 +834,8 @@ contract MarketplaceStorage {
         uint256 indexed assetId,
         address indexed seller,
         uint256 price,
-        address indexed buyer
+        address indexed buyer,
+        uint256 timestamp
     );
     event OrderCancelled(
         bytes32 id,
@@ -846,7 +848,8 @@ contract MarketplaceStorage {
         address indexed seller,
         address indexed bidder,
         uint256 latestPrice,
-        uint256 expiresAt
+        uint256 expiresAt,
+        uint256 timestamp
     );
     event OrderBidFailed(
         bytes32 id,
@@ -1115,6 +1118,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
         nftRegistry.safeTransferFrom(assetOwner, address(this), assetId);
 
         emit OrderCreated(
+            tpe,
             orderId,
             assetId,
             assetOwner,
@@ -1195,6 +1199,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
         require(address(this) == nftRegistry.ownerOf(_assetId), "The asset not deposit!");
 
         uint256 price = 0;
+        uint256 timestamp = block.timestamp;
         if(tpe == ORDER_TYPE_NORMAL){
             price = order.price;
             require(
@@ -1204,7 +1209,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
         }else if (tpe == ORDER_TYPE_NORMAL){
             price = order.bid;
             require(sender == order.bidder, "The auction order unauthorized user");
-            require(block.timestamp > order.expiresAt, "The auction order not expired");
+            require(timestamp > order.expiresAt, "The auction order not expired");
         }else{
             revert("Error Type!");
         }
@@ -1227,7 +1232,8 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
             _assetId,
             seller,
             price,
-            sender
+            sender,
+            timestamp
         );
 
         return order;
@@ -1258,11 +1264,12 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
 
         address seller = order.seller;
 
+        uint256 timestamp = block.timestamp;
         require(address(this) == nftRegistry.ownerOf(_assetId), "The asset not deposit!");
         require(seller != address(0), "Invalid address");
         require(seller != sender, "Unauthorized user");
         require(order.bidder != sender, "Unauthorized user");
-        require(block.timestamp < order.expiresAt, "The order expired");
+        require(timestamp < order.expiresAt, "The order expired");
         require(order.bid < bid, "Bid cannot be lower than last time");
 
         address oldBidder = order.bidder;
@@ -1283,7 +1290,8 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
             seller,
             sender,
             order.bid,
-            order.expiresAt
+            order.expiresAt,
+            timestamp
         );
     }
 
