@@ -1014,10 +1014,12 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
     /**
       * @dev Executes the sale for a published NFT and checks for the asset fingerprint
     * @param assetId - ID of the published NFT
+    * @param price - transaction price of NFT
     * @param fingerprint - Verification info for the asset
     */
     function safeExecuteOrder(
         uint256 assetId,
+        uint256 price,
         bytes memory fingerprint
     )
     public
@@ -1025,6 +1027,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
     {
         _executeOrder(
             assetId,
+            price,
             fingerprint
         );
     }
@@ -1032,15 +1035,18 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
     /**
       * @dev Executes the sale for a published NFT
     * @param assetId - ID of the published NFT
+    * @param price - transaction price of NFT
     */
     function executeOrder(
-        uint256 assetId
+        uint256 assetId,
+        uint256 price
     )
     public
     whenNotPaused
     {
         _executeOrder(
             assetId,
+            price,
             ""
         );
     }
@@ -1115,7 +1121,9 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
         }
 
         // deposit nft to contract
-        nftRegistry.safeTransferFrom(assetOwner, address(this), assetId);
+        if(order.tpe == ORDER_TYPE_AUCTION){
+            nftRegistry.safeTransferFrom(assetOwner, address(this), assetId);
+        }
 
         emit OrderCreated(
             tpe,
@@ -1148,12 +1156,14 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
         delete orderMap[assetId];
 
         // if order type is auction,return bid to bidder
-        if(order.tpe == ORDER_TYPE_AUCTION && orderBidder!=address(0)){
-            _returnBidder(orderBidder, bid);
+        if(order.tpe == ORDER_TYPE_AUCTION){
+            if(orderBidder != address(0)){
+                _returnBidder(orderBidder, bid);
+            }
+            // Return from contract
+            nftRegistry.safeTransferFrom(address(this), orderSeller, assetId);
         }
 
-        // Return from contract
-        nftRegistry.safeTransferFrom(address(this), orderSeller, assetId);
 
         emit OrderCancelled(
             orderId,
@@ -1167,10 +1177,12 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
     /**
       * @dev Executes the sale for a published NFT
     * @param assetId - ID of the published NFT
+    * @param _price - transaction price of NFT
     * @param fingerprint - Verification info for the asset
     */
     function _executeOrder(
         uint256 assetId,
+        uint256 _price,
         bytes memory fingerprint
     )
     internal returns (Order memory)
@@ -1191,6 +1203,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
         Order memory order = orderMap[_assetId];
         require(order.id != 0, "Asset not published");
 
+        bytes32 orderId = order.id;
         address seller = order.seller;
         uint256 tpe = order.tpe;
 
@@ -1202,30 +1215,50 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
         uint256 timestamp = block.timestamp;
         if(tpe == ORDER_TYPE_NORMAL){
             price = order.price;
+            require(price == _price, "The price is not correct");
+            if(seller != nftRegistry.ownerOf(_assetId)){
+                delete orderMap[_assetId];
+                emit OrderCancelled(
+                    orderId,
+                    _assetId,
+                    seller
+                );
+                revert( "The seller is no longer the owner");
+            }
             require(
                 hccToken.transferFrom(sender, address(this) , price),
                 "_executeOrder::Transfering the sale amount to the seller failed"
             );
-        }else if (tpe == ORDER_TYPE_NORMAL){
+        }else if (tpe == ORDER_TYPE_AUCTION){
             price = order.bid;
+            require(price == _price, "The price is not correct");
             require(sender == order.bidder, "The auction order unauthorized user");
             require(timestamp > order.expiresAt, "The auction order not expired");
         }else{
             revert("Error Type!");
         }
-
-        bytes32 orderId = order.id;
         delete orderMap[_assetId];
 
         // send token from contract to seller
         _transferMoney(price, seller, address(this));
 
-        // Transfer asset owner
-        nftRegistry.safeTransferFrom(
-            address(this),
-            sender,
-            _assetId
-        );
+        if(tpe == ORDER_TYPE_NORMAL){
+            // Transfer asset owner
+            nftRegistry.safeTransferFrom(
+                seller,
+                sender,
+                _assetId
+            );
+        }else if (tpe == ORDER_TYPE_AUCTION){
+            // Transfer asset owner
+            nftRegistry.safeTransferFrom(
+                address(this),
+                sender,
+                _assetId
+            );
+        }else{
+            revert("Error Type!");
+        }
 
         emit OrderSuccessful(
             orderId,
