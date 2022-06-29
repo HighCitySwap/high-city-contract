@@ -961,6 +961,22 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
     }
 
     /**
+      * @dev Get published order
+    * @param assetId - ID of the published NFT
+    */
+    function getOrder(
+        uint256 assetId
+    )
+    public view returns (uint256 tpe,bytes32 id,address seller,uint256 price,address bidder,uint256 bid,uint256 expiresAt)
+    {
+        Order memory order = orderMap[assetId];
+        if(order.id == bytes32(0)){
+            return (0, bytes32(0), address(0), 0, address(0), 0, 0);
+        }
+        return (order.tpe, order.id, order.seller, order.price, order.bidder, order.bid, order.expiresAt);
+    }
+
+    /**
       * @dev Creates a new normal order
     * @param assetId - ID of the published NFT
     * @param priceInWei - Price in Wei for the supported coin
@@ -1086,10 +1102,10 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
             "_createOrder::The contract is not authorized to manage the asset"
         );
         require(priceInWei > 0, "Price should be bigger than 0");
-        require(tpe==ORDER_TYPE_NORMAL || expiresAt > block.timestamp.add(1 minutes), "_createOrder::Publication auction order should be more than 1 minute in the future");
+        require(tpe == ORDER_TYPE_NORMAL || expiresAt > block.timestamp.add(1 minutes), "_createOrder::Publication auction order should be more than 1 minute in the future");
 
         Order memory order = orderMap[assetId];
-        require(order.id > 0, "The asset has published!");
+        require(order.id == bytes32(0), "The asset has published!");
 
         bytes32 orderId = keccak256(
             abi.encodePacked(
@@ -1121,7 +1137,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
         }
 
         // deposit nft to contract
-        if(order.tpe == ORDER_TYPE_AUCTION){
+        if(tpe == ORDER_TYPE_AUCTION){
             nftRegistry.safeTransferFrom(assetOwner, address(this), assetId);
         }
 
@@ -1144,7 +1160,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
         address sender = _msgSender();
         Order memory order = orderMap[assetId];
 
-        require(order.id != 0, "Asset not published");
+        require(order.id != bytes32(0), "Asset not published");
         require(order.seller == sender || sender == owner(), "Unauthorized user");
 
         ERC721Interface nftRegistry = ERC721Interface(nftAddress);
@@ -1201,7 +1217,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
             );
         }
         Order memory order = orderMap[_assetId];
-        require(order.id != 0, "Asset not published");
+        require(order.id != bytes32(0), "Asset not published");
 
         bytes32 orderId = order.id;
         address seller = order.seller;
@@ -1293,7 +1309,7 @@ contract HCCMarketplace is Initializable, Ownable, Pausable, MarketplaceStorage,
         Order memory order = orderMap[_assetId];
         bytes32 orderId = order.id;
 
-        require(orderId != 0, "Asset not published");
+        require(orderId != bytes32(0), "Asset not published");
 
         address seller = order.seller;
 
